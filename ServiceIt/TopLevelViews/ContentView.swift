@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
+    @Bindable var provider: ServiceProvider
     @Query var providers: [ServiceProvider]
     @State private var showingAddProvider = false
     @State private var showingTypeManager = false
@@ -38,17 +39,11 @@ struct ContentView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .padding()
-                    
-                    Button("Manage Types") {
-                        showingTypeManager = true}
-                        .buttonStyle(.borderedProminent)
-                        .padding()
                     }
-                
             }//end vstack
 
             .sheet(isPresented: $showingAddProvider) {
-                AddProviderFormView()
+                AddProviderView()
             }
             .sheet(isPresented: $showingTypeManager){
                 ServiceTypeListView()
@@ -59,11 +54,7 @@ struct ContentView: View {
                     Text("Service It")
                         .font(.headline)
                 }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationLink(destination: ServiceRecordListView()) {
-                        Image(systemName: "magnifyingglass")
-                    }
-                }
+
             }
         }
     }
@@ -71,7 +62,15 @@ struct ContentView: View {
 
 
 #Preview {
-    ContentView()
+    let container = try! ModelContainer(
+        for: ServiceProvider.self, ServiceRecord.self,
+        configurations: .init(isStoredInMemoryOnly: true)
+    )
+    let context = container.mainContext
+    let provider = ServiceProvider(name: "Preview Garage", contactInfo: "preview@garage.com")
+     ContentView(provider: provider)
+        .modelContainer(container)
 }
+
 
 

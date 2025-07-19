@@ -4,27 +4,24 @@
 //
 //  Created by Jacob Filek on 7/12/25.
 //
-
 import SwiftData
 import Foundation
 
 @Model
 class ServiceRecord {
-    
+    @Relationship var vehicle: Vehicle?
     @Relationship var type: ServiceType?
     var cost: Double
     var date: Date
     var mileage: Int
     @Relationship var provider: ServiceProvider?
-
     
-    init(type: ServiceType?, cost: Double, date: Date, mileage: Int, provider: ServiceProvider? = nil) {
+    init(vehicle: Vehicle? = nil, type: ServiceType?, cost: Double, date: Date, mileage: Int, provider: ServiceProvider? = nil) {
+        self.vehicle = vehicle
         self.type = type
         self.cost = cost
         self.date = date
         self.mileage = mileage
         self.provider = provider
     }
-    
-    
 }
