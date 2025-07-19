@@ -42,6 +42,11 @@ struct EditProviderFormView: View {
                 name = provider.name
                 contact = provider.contactInfo
             }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
         }
     }
 }

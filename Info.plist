@@ -39,6 +39,8 @@
 					<string>carserv</string>
 				</array>
 			</dict>
+			<key>UTTypeIconFile</key>
+			<string></string>
 		</dict>
 	</array>
 </dict>
