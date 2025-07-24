@@ -4,17 +4,30 @@
 //
 //  Created by Jacob Filek on 7/13/25.
 //
-
 import SwiftUI
+import Foundation
 
 struct VehicleDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Bindable var vehicle: Vehicle // 👈 Bind to the vehicle model
     @FocusState private var isMileageFocused: Bool
-
+    
     var body: some View {
+        
         NavigationStack {
             Form {
+                
+                if let data = vehicle.photoData,
+                   let uiImage = UIImage(data: data) {
+                    Section {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: 100)
+                            .cornerRadius(8)
+                    }
+                }
+                
                 Section(header: Text("Basic Info")) {
                     HStack {
                         TextField("Model Year", value: $vehicle.modelYear, format: .number.locale(Locale(identifier: "en_US_POSIX")))
@@ -53,14 +66,7 @@ struct VehicleDetailView: View {
 
 
 #Preview {
-    let testVehicle = Vehicle(
-        name: "Test Car",
-        modelYear: 2022,
-        vin: "1HGBH41JXMN109186",
-        currentMileage: 32500, 
-        license: "123456789"
-    )
-
-    return VehicleDetailView(vehicle: testVehicle)
+    VehicleDetailView(vehicle: MockData.vehicle1)
+        .modelContainer(PreviewContainer.shared)
 }
 

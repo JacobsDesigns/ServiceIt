@@ -10,8 +10,10 @@ import SwiftData
 @Model
 class ServiceType {
     var name: String
+    var suggestedMileage: Int?
 
-    init(name: String) {
+    init(name: String, suggestedMileage: Int? = nil) {
         self.name = name
+        self.suggestedMileage = suggestedMileage
     }
 }

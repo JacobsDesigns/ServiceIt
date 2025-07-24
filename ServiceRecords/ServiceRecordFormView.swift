@@ -4,8 +4,6 @@
 //
 //  Created by Jacob Filek on 7/12/25.
 //
-
-
 import SwiftUI
 import SwiftData
 
@@ -14,11 +12,11 @@ struct ServiceRecordFormView: View {
     @Environment(\.modelContext) var modelContext
 
     var recordToEdit: ServiceRecord? = nil
-    var vehicleMileage: Int? = nil
+    var vehicle: Vehicle? = nil
 
     @Query var serviceTypes: [ServiceType]
     @Query var serviceProviders: [ServiceProvider]
-    @Query var vehicles: [Vehicle]
+    @Query var allVehicles: [Vehicle]
 
     @State private var selectedVehicle: Vehicle?
     @State private var selectedType: ServiceType?
@@ -28,20 +26,46 @@ struct ServiceRecordFormView: View {
     @State private var mileage: String = ""
     @State private var showingTypeManager = false
     @State private var showingDeleteAlert = false
+    @State private var showCalendar = false
 
+    enum FieldFocus: Hashable {
+        case mileage, cost
+    }
+    @FocusState private var focusedField: FieldFocus?
+    @State private var costText: String = ""
+    
     var body: some View {
         NavigationStack {
             Form {
-                Section(header: Text("Vehicle")) {
-                    Picker("Vehicle", selection: $selectedVehicle) {
-                        Text("Select Vehicle").tag(nil as Vehicle?)
-                        ForEach(vehicles) { vehicle in
-                            Text("\(vehicle.modelYear) \(vehicle.name)")
-                                .tag(vehicle as Vehicle?)
-                        }
+                
+                if let data = selectedVehicle?.photoData,
+                   let image = UIImage(data: data) {
+                    Section {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: 180)
+                            .cornerRadius(5)
+                            .padding(.vertical, 2)
                     }
+                }
+                
+                if vehicle == nil {
+                    // Show picker only when no default vehicle passed
+                    Section(header: Text("Vehicle")) {
+                        Picker("Vehicle", selection: $selectedVehicle) {
+                            Text("Select Vehicle").tag(nil as Vehicle?)
+                            ForEach(allVehicles) { vehicle in
+                                Text("\(vehicle.plainModelYearString) \(vehicle.name)")
+                                    .tag(vehicle as Vehicle?)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                    }
+                }
 
-                    if let mileageHint = vehicleMileage, mileage.isEmpty {
+                if let mileageHint = selectedVehicle?.currentMileage, mileage.isEmpty {
+                    Section {
                         Button("Use Current Mileage (\(mileageHint) mi)") {
                             mileage = String(mileageHint)
                         }
@@ -64,13 +88,37 @@ struct ServiceRecordFormView: View {
                         }
                     }
 
-                    TextField("Cost", text: $cost)
+                    TextField("Cost", text: $costText)
                         .keyboardType(.decimalPad)
-
-                    DatePicker("Date", selection: $date, displayedComponents: .date)
-
+                        .focused($focusedField, equals: .cost)
+                    
                     TextField("Mileage", text: $mileage)
                         .keyboardType(.decimalPad)
+                        .focused($focusedField, equals: .mileage)
+                        .onChange(of: mileage){ newValue in
+                            mileage = newValue.filter { $0.isNumber }
+                        }
+                    
+                    Button {
+                        showCalendar = true
+                    } label: {
+                        HStack {
+                            Text("Date")
+                            Image(systemName: "calendar")
+                            Spacer()
+                            Text(date.formatted(date: .abbreviated, time: .omitted))
+                        }
+                    }
+                    .popover(isPresented: $showCalendar) {
+                        DatePicker("Date", selection: $date, displayedComponents: .date)
+                            .datePickerStyle(.graphical)
+                            .frame(width: 360, height: 360)
+                            .presentationCompactAdaptation(.popover)
+                    }
+                    .onChange(of: date) { _, _ in
+                        showCalendar = false
+                    }
+
                 }
 
                 Section {
@@ -78,23 +126,44 @@ struct ServiceRecordFormView: View {
                         saveRecord()
                         dismiss()
                     }
-                    .disabled(selectedVehicle == nil || selectedType == nil || selectedProvider == nil || Double(cost) == nil)
-
-                    Button("Add Service Type") {
-                        showingTypeManager = true
-                    }
-                    .sheet(isPresented: $showingTypeManager) {
-                        ServiceTypeListView()
-                    }
-
+                    .disabled(selectedVehicle == nil ||
+                              selectedType == nil ||
+                              selectedProvider == nil ||
+                              Double(costText) == nil ||
+                              Int(mileage) == nil)
+                    
+                    
                     if recordToEdit != nil {
                         Button("Delete Record", role: .destructive) {
                             showingDeleteAlert = true
                         }
                     }
                 }
+                
+                Section {
+                    Button("Add Service Type") {
+                        showingTypeManager = true
+                    }
+                    .sheet(isPresented: $showingTypeManager) {
+                        ServiceTypeListView()
+                    }
+                }
+                
             }
-            .navigationTitle(recordToEdit == nil ? "New Service" : "Edit Service")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction){
+                    Button("Cancel"){
+                        dismiss()
+                    }
+                }
+                
+                ToolbarItemGroup(placement: .keyboard){
+                    Spacer()
+                    Button("Done"){
+                        focusedField = nil
+                    }
+                }
+            }
             .onAppear {
                 populateEditingFields()
                 initializeDefaultsIfNeeded()
@@ -108,24 +177,34 @@ struct ServiceRecordFormView: View {
             } message: {
                 Text("This action cannot be undone.")
             }
+            .navigationTitle(recordToEdit == nil ? "New Service" : "Edit Service")
         }
     }
 
     // MARK: - Helpers
 
     private func populateEditingFields() {
+        
         guard let record = recordToEdit else { return }
         selectedVehicle = record.vehicle
         selectedProvider = record.provider
         selectedType = record.type
-        cost = String(record.cost)
+        cost = "\(record.cost)"
+        costText = "\(record.cost)"
         date = record.date
-        mileage = String(record.mileage)
+        mileage = "\(record.mileage)"
+        
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 2
+        formatter.maximumFractionDigits = 2
+        costText = formatter.string(from: NSNumber(value: record.cost)) ?? ""
+
     }
 
     private func initializeDefaultsIfNeeded() {
         if recordToEdit == nil {
-            selectedVehicle = vehicles.first
+            selectedVehicle = vehicle ?? allVehicles.first
             selectedProvider = serviceProviders.first
             selectedType = serviceTypes.first
         }
@@ -135,29 +214,30 @@ struct ServiceRecordFormView: View {
         guard let vehicle = selectedVehicle,
               let provider = selectedProvider,
               let type = selectedType,
-              let costValue = Double(cost) else { return }
-
+              let costValue = Double(costText),
+              let mileageValue = Int(mileage) else { return }
+        
         if let record = recordToEdit {
             record.vehicle = vehicle
             record.provider = provider
             record.type = type
             record.cost = costValue
             record.date = date
-            record.mileage = Int(mileage) ?? 0
+            record.mileage = mileageValue
         } else {
             let newRecord = ServiceRecord(
                 vehicle: vehicle,
                 type: type,
                 cost: costValue,
                 date: date,
-                mileage: Int(mileage) ?? 0,
+                mileage: mileageValue,
                 provider: provider
             )
             modelContext.insert(newRecord)
         }
-
         try? modelContext.save()
     }
+        
 
     private func deleteRecord() {
         guard let record = recordToEdit else { return }
@@ -167,27 +247,6 @@ struct ServiceRecordFormView: View {
 }
 
 #Preview {
-    let civic = Vehicle(name: "Civic", modelYear: 2020, vin: "VIN123", currentMileage: 22000, license: "ABC123")
-    let oilChange = ServiceType(name: "Oil Change")
-    let autofix = ServiceProvider(name: "AutoFix", contactInfo: "autofix@example.com")
-
-    let sampleRecord = ServiceRecord(
-        vehicle: civic,
-        type: oilChange,
-        cost: 89.99,
-        date: .now,
-        mileage: 22000,
-        provider: autofix
-    )
-
-    return ServiceRecordFormView(
-        recordToEdit: sampleRecord,
-        vehicleMileage: civic.currentMileage
-    )
-    .modelContainer(for: [
-        Vehicle.self,
-        ServiceType.self,
-        ServiceProvider.self,
-        ServiceRecord.self
-    ])
+     ServiceRecordFormView()
+        .modelContainer(PreviewContainer.shared)
 }

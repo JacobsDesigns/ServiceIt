@@ -7,116 +7,157 @@
 import SwiftUI
 import SwiftData
 
-enum RecordSortOption: String, CaseIterable, Identifiable {
-    case dateDescending = "Date ↓"
-    case dateAscending = "Date ↑"
-    case mileageAscending = "Mileage ↑"
-    case mileageDescending = "Mileage ↓"
-    case costDescending = "Cost ↓"
-    case costAscending = "Cost ↑"
-
-    var id: String { rawValue }
-}
-
 struct ServiceRecordListView: View {
+    @Environment(\.modelContext) private var modelContext
     var vehicle: Vehicle
-
     @Query var allRecords: [ServiceRecord]
+
     @State private var searchText = ""
-    @State private var sortOption: RecordSortOption = .dateDescending
+    @Binding var sortOption: RecordSortOption
+    var selectedYear: Int?
+
     @State private var showingAddRecord = false
     @State private var recordToEdit: ServiceRecord?
-
+    
     var filteredRecords: [ServiceRecord] {
-        let vehicleRecords = allRecords.filter { $0.vehicle?.id == vehicle.id }
+        let validRecords = allRecords.filter {
+            $0.type != nil && $0.provider != nil && $0.vehicle != nil
+        }
 
-        let searched = searchText.isEmpty
-            ? vehicleRecords
-            : vehicleRecords.filter {
-                ($0.type?.name ?? "").localizedCaseInsensitiveContains(searchText) ||
-                ($0.provider?.name ?? "").localizedCaseInsensitiveContains(searchText)
-            }
+        let vehicleRecords = validRecords.filter {
+            $0.vehicle?.id == vehicle.id
+        }
+
+        let yearFiltered = selectedYear == nil ? vehicleRecords : vehicleRecords.filter {
+            Calendar.current.component(.year, from: $0.date) == selectedYear
+        }
+
+        let searched = searchText.isEmpty ? yearFiltered : yearFiltered.filter {
+            guard let typeName = $0.type?.name,
+                  let providerName = $0.provider?.name else { return false }
+
+            return typeName.localizedCaseInsensitiveContains(searchText) ||
+                   providerName.localizedCaseInsensitiveContains(searchText) ||
+                   String(Calendar.current.component(.year, from: $0.date)).contains(searchText)
+        }
 
         switch sortOption {
-        case .dateDescending:
-            return searched.sorted { $0.date > $1.date }
-        case .dateAscending:
-            return searched.sorted { $0.date < $1.date }
-        case .mileageAscending:
-            return searched.sorted { $0.mileage < $1.mileage }
-        case .mileageDescending:
-            return searched.sorted { $0.mileage > $1.mileage }
-        case .costAscending:
-            return searched.sorted { $0.cost < $1.cost }
-        case .costDescending:
-            return searched.sorted { $0.cost > $1.cost }
+        case .dateDescending:     return searched.sorted { $0.date > $1.date }
+        case .dateAscending:      return searched.sorted { $0.date < $1.date }
+        case .mileageAscending:   return searched.sorted { $0.mileage < $1.mileage }
+        case .mileageDescending:  return searched.sorted { $0.mileage > $1.mileage }
+        case .costAscending:      return searched.sorted { $0.cost < $1.cost }
+        case .costDescending:     return searched.sorted { $0.cost > $1.cost }
         }
+    }
+
+    var totalCost: Decimal {
+        Decimal(filteredRecords.reduce(0) { $0 + $1.cost })
     }
 
     var body: some View {
-        NavigationStack {
-            VStack {
-                Picker("Sort By", selection: $sortOption) {
-                    ForEach(RecordSortOption.allCases) { option in
-                        Text(option.rawValue).tag(option)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal)
+        VStack(spacing: 0) {
 
-                List {
-                    ForEach(filteredRecords) { record in
-                        Button {
-                            recordToEdit = record
-                        } label: {
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text(record.type?.name ?? "Unknown Service")
-                                    .font(.headline)
+            List {
+                ForEach(filteredRecords) { record in
+                    Button {
+                        recordToEdit = record
+                    } label: {
+                        VStack(alignment: .leading, spacing: 6) {
+                            
+                            HStack {
 
+                                if let type = record.type, isValidType(type) {
+                                    Text(type.name)
+                                        .font(.headline)
+                                } else {
+                                    Text("Unknown Service")
+                                        .font(.headline)
+                                }
+
+                                Spacer()
+                                
                                 if let provider = record.provider {
-                                    Text("Provider: \(provider.name)")
+                                    Text(provider.name)
                                         .font(.footnote)
                                         .italic()
                                         .foregroundColor(.secondary)
+                                } else {
+                                    Text("Unknown Provider")
+                                        .font(.footnote)
                                 }
-
-                                Text("Cost: \(record.cost, format: .currency(code: "USD"))")
-
-                                HStack {
-                                    Text("Date: \(record.date.formatted(date: .abbreviated, time: .omitted))")
-                                    Spacer()
-                                    Text("Mileage: \(record.mileage) mi")
-                                }
-                                .font(.footnote)
-                                .foregroundColor(.gray)
                             }
+
+                            Text("Cost: \(record.cost, format: .currency(code: "USD"))")
+
+                            HStack {
+                                Text(record.date.formatted(date: .abbreviated, time: .omitted))
+                                Spacer()
+                                Text("Mileage: \(record.mileage)")
+                            }
+                            .font(.footnote)
+                            .foregroundColor(.gray)
                         }
                     }
                 }
-                .listRowSpacing(4)
-                .searchable(text: $searchText)
+
             }
-            .navigationTitle("Service Records")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        showingAddRecord = true
-                    } label: {
-                        Label("Add Record", systemImage: "plus")
+            .listRowSpacing(4)
+            .searchable(text: $searchText)
+            
+            if !filteredRecords.isEmpty {
+ 
+                    HStack {
+                        Text("Total Cost")
+                            .font(.headline)
+                        Spacer()
+                        Text(totalCost, format: .currency(code: "USD"))
+                            .font(.headline)
                     }
+                    .padding()
+                
+            }
+            
+        }
+
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    showingAddRecord = true
+                } label: {
+                    Label("Add Record", systemImage: "plus")
                 }
             }
-            .sheet(isPresented: $showingAddRecord) {
-                ServiceRecordFormView(vehicleMileage: vehicle.currentMileage)
-            }
-            .sheet(item: $recordToEdit) { record in
-                ServiceRecordFormView(recordToEdit: record, vehicleMileage: vehicle.currentMileage)
-            }
+        }
+        .sheet(isPresented: $showingAddRecord) {
+            ServiceRecordFormView(vehicle: vehicle)
+        }
+        .sheet(item: $recordToEdit) { record in
+            ServiceRecordFormView(recordToEdit: record, vehicle: vehicle)
         }
     }
+
+    func isValidType(_ type: ServiceType?) -> Bool {
+        guard let type else { return false }
+        let typeID = type.persistentModelID
+        let descriptor = FetchDescriptor<ServiceType>(
+            predicate: #Predicate { $0.persistentModelID == typeID }
+        )
+        return (try? modelContext.fetch(descriptor).first) != nil
+    }
+
+    
 }
 
-#Preview {
-    ServiceRecordListView(vehicle: MockData.vehicle1)
-        .modelContainer(PreviewContainer.shared)
+#Preview("Service Record List") {
+    struct PreviewWrapper: View {
+        @State private var sortOption: RecordSortOption = .dateDescending
+
+        var body: some View {
+            ServiceRecordListView(vehicle: MockData.vehicle1, sortOption: $sortOption)
+                .modelContainer(PreviewContainer.shared)
+        }
+    }
+
+    return PreviewWrapper()
 }

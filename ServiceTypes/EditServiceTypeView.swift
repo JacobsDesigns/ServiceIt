@@ -12,12 +12,23 @@ struct EditServiceTypeView: View {
     @Environment(\.modelContext) private var modelContext
 
     @Bindable var type: ServiceType
+    @State private var mileageText: String = ""
 
     var body: some View {
         NavigationStack {
             Form {
-                Section {
+                Section("Details") {
                     TextField("Service Type Name", text: $type.name)
+
+                    TextField("Suggested Interval (mi)", text: $mileageText)
+                        .keyboardType(.numberPad)
+                        .onChange(of: mileageText) {
+                            if let value = Int(mileageText) {
+                                type.suggestedMileage = value
+                            } else {
+                                type.suggestedMileage = nil
+                            }
+                        }
                 }
 
                 Section {
@@ -32,7 +43,20 @@ struct EditServiceTypeView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        hideKeyboard()
+                    }
+                }
+            }
+            .onAppear {
+                mileageText = type.suggestedMileage.map(String.init) ?? ""
             }
         }
+    }
+
+    private func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
