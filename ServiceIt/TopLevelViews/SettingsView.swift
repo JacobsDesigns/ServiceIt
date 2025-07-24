@@ -430,7 +430,6 @@ struct SettingsView: View {
                 let idHash = vehicle.persistentModelID.id.hashValue
                 let sanitizedID = String(idHash).replacingOccurrences(of: "[^a-zA-Z0-9]", with: "_", options: .regularExpression)
                 let filename = "Vehicle_\(sanitizedID).jpg"
-                //let imageDirectory = FileManager.default.temporaryDirectory
 
                 let imageURL = imageDirectory.appendingPathComponent(filename)
 
