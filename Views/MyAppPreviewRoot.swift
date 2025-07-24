@@ -1,3 +1,12 @@
+//
+//  MyAppPreviewRoot.swift
+//  ServiceIt
+//
+//  Created by Jacob Filek on 7/23/25.
+//
+import SwiftUI
+
+
 struct MyAppPreviewRoot: View {
     var body: some View {
         TabView {
@@ -21,3 +30,8 @@ struct MyAppPreviewRoot: View {
         .modelContainer(PreviewContainer.shared)
     }
 }
+
+#Preview {
+    MyAppPreviewRoot()
+}
+

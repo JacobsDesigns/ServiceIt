@@ -27,6 +27,11 @@ struct ServiceScheduleView: View {
                         }
                     }
                     .pickerStyle(.menu)
+                    .onAppear {
+                        if allVehicles.count == 1 {
+                            selectedVehicle = allVehicles.first
+                        }
+                    }
                     
                     // 🔍 Contextual Schedule
                     if let selectedVehicle {
