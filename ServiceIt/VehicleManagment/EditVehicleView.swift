@@ -37,9 +37,9 @@ struct EditVehicleView: View {
                                     PhotosPicker(selection: $selectedPhoto, matching: .images, photoLibrary: .shared()) {
                                         Label("Update Photo", systemImage: "photo")
                                     }
-                                    .onChange(of: selectedPhoto) { newItem in
+                                    .onChange(of: selectedPhoto) {
                                         Task {
-                                            if let data = try? await newItem?.loadTransferable(type: Data.self) {
+                                            if let data = try? await selectedPhoto?.loadTransferable(type: Data.self) {
                                                 selectedImageData = data
                                                 vehicle.photoData = data
                                             }

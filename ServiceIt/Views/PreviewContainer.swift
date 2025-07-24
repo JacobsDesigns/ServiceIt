@@ -4,8 +4,6 @@
 //
 //  Created by Jacob Filek on 7/18/25.
 //
-
-
 import SwiftData
 
 @MainActor
@@ -18,9 +16,17 @@ enum PreviewContainer {
             ServiceRecord.self
         ])
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try! ModelContainer(for: schema, configurations: [config])
-        seedMockData(into: container.mainContext)
-        return container
+        do {
+            let container = try ModelContainer(for: schema, configurations: [config])
+            seedMockData(into: container.mainContext)
+            return container
+        } catch {
+            fatalError("❌ Failed to build preview container: \(error)")
+        }
+
+//        let container = try! ModelContainer(for: schema, configurations: [config])
+//        seedMockData(into: container.mainContext)
+//        return container
     }()
 
     private static func seedMockData(into context: ModelContext) {

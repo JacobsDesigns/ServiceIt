@@ -41,9 +41,9 @@ struct AddVehicleView: View {
                     PhotosPicker(selection: $selectedPhoto, matching: .images, photoLibrary: .shared()) {
                         Label("Select Vehicle Photo", systemImage: "photo.on.rectangle")
                     }
-                    .onChange(of: selectedPhoto) { newItem in
+                    .onChange(of: selectedPhoto) {
                         Task {
-                            if let data = try? await newItem?.loadTransferable(type: Data.self) {
+                            if let data = try? await selectedPhoto?.loadTransferable(type: Data.self) {
                                 selectedImageData = data
                                 // Optionally store it or preview it
                             }
@@ -88,20 +88,26 @@ struct AddVehicleView: View {
 
     // MARK: - Save Logic
     private func saveVehicle() {
-        guard let year = Int(modelYearString),
+        guard let parsedYear = Int(modelYearString),
               let mileageValue = mileage else { return }
 
         let newVehicle = Vehicle(
             name: name,
-            modelYear: Int(modelYearString) ?? 0,
+            modelYear: parsedYear,
             vin: vin,
             license: license,
-            currentMileage: mileage ?? 0,
+            currentMileage: mileageValue,
             photoData: selectedImageData
         )
-
+        
         modelContext.insert(newVehicle)
-        try? modelContext.save()
+        
+        do {
+            try modelContext.save()
+            print("Vehicle saved successfully!")
+        } catch {
+            print ("Failed to save context: \(error.localizedDescription)")
+        }
     }
 }
 

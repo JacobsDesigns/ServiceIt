@@ -33,7 +33,12 @@ struct AllRecordsView: View {
                         }
                         .pickerStyle(.menu)
                         .frame(maxWidth: .infinity)
- 
+                        .onAppear {
+                            if allVehicles.count == 1 {
+                                selectedVehicle = allVehicles.first
+                            }
+                        }
+                        
                         Picker("Sort", selection: $sortOption) {
                             ForEach(RecordSortOption.allCases) {
                                 Text($0.rawValue).tag($0)

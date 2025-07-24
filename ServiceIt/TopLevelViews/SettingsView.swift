@@ -7,8 +7,18 @@
 import SwiftUI
 import SwiftData
 import UniformTypeIdentifiers
+import ZIPFoundation
+
+
+struct ExportedFile: Identifiable {
+    let id = UUID()
+    let url: URL
+}
 
 struct SettingsView: View {
+    @State private var exportedFile: ExportedFile?
+    @State private var showToast = false
+
     @Environment(\.modelContext) private var modelContext
 
     @Query(sort: \Vehicle.name) var vehicles: [Vehicle]
@@ -42,131 +52,159 @@ struct SettingsView: View {
     @State private var showShareLink = false
     
     var body: some View {
-        NavigationStack {
-            List {
-                vehiclesSection
-                providersSection
-                serviceTypesSection
-                dataManagementSection
-            }
-            .navigationTitle("Settings")
-            
-            .alert("Cannot Delete Vehicle", isPresented: $showDeleteVehicleWarning, presenting: vehicleToDelete) { vehicle in
-                Button("Cancel", role: .cancel) {
-                    vehicleToDelete = nil
-                    confirmedVehicleToDelete = nil
+        ZStack {
+            NavigationStack {
+                List {
+                    vehiclesSection
+                    providersSection
+                    serviceTypesSection
+                    dataManagementSection
                 }
-                Button("Delete Anyway", role: .destructive) {
-                    confirmedVehicleToDelete = vehicle
-                    vehicleToDelete = nil
-                    showDeleteVehicleWarning = false
-                }
-            } message: { vehicle in
-                Text("This Vehicle is still used by existing service records. Deleting it will remove the link.")
-            }
-            .deleteAlert(object: $confirmedVehicleToDelete, title: "Vehicle") { vehicle in
-                unlinkVehicle(from: vehicle)
-                modelContext.delete(vehicle)
-                try? modelContext.save()
-            }
-            
-            .alert("Cannot Delete Service Type", isPresented: $showDeleteTypeWarning, presenting: typeToDelete) { type in
-                Button("Cancel", role: .cancel) {
-                    typeToDelete = nil
-                    confirmedTypeToDelete = nil
-                }
-                Button("Delete Anyway", role: .destructive) {
-                    confirmedTypeToDelete = type
-                    typeToDelete = nil
-                    showDeleteTypeWarning = false
-                }
-            } message: { type in
-                Text("This Service Type is still used by existing service records. Deleting it will remove the link.")
-            }
-            .deleteAlert(object: $confirmedTypeToDelete, title: "Service Type") { type in
-                unlinkServiceType(from: type)
-                modelContext.delete(type)
-                try? modelContext.save()
-            }
-            
-            .alert("Cannot Delete Service Provider", isPresented: $showDeleteProviderWarning, presenting: providerToDelete) { provider in
-                Button("Cancel", role: .cancel) {
-                    providerToDelete = nil
-                    confirmedProviderToDelete = nil
-                }
-                Button("Delete Anyway", role: .destructive) {
-                    confirmedProviderToDelete = provider
-                    providerToDelete = nil
-                    showDeleteProviderWarning = false
-                }
-            } message: { provider in
-                Text("This Service Provider is still used by existing service records. Deleting it will remove the link.")
-            }
-            .deleteAlert(object: $confirmedProviderToDelete, title: "Service Provider") { provider in
-                unlinkServiceProvider(from: provider)
-                modelContext.delete(provider)
-                try? modelContext.save()
-            }
-            
-            
-            .overlay(alignment: .bottom) {
-                VStack(spacing: 12) {
-
-                    if showShareLink, let exportURL {
-                        ShareLink(item: exportURL) {
-                            Label("Export CSV", systemImage: "square.and.arrow.up")
-                                .padding(12)
-                                .background(.ultraThinMaterial)
-                                .clipShape(Capsule())
-                        }
-                        .onTapGesture {
-                            showShareLink = false
-                        }
-                        .transition(.scale)
+                .navigationTitle("Settings")
+                
+                .alert("Cannot Delete Vehicle", isPresented: $showDeleteVehicleWarning, presenting: vehicleToDelete) { vehicle in
+                    Button("Cancel", role: .cancel) {
+                        vehicleToDelete = nil
+                        confirmedVehicleToDelete = nil
                     }
+                    Button("Delete Anyway", role: .destructive) {
+                        confirmedVehicleToDelete = vehicle
+                        vehicleToDelete = nil
+                        showDeleteVehicleWarning = false
+                    }
+                } message: { vehicle in
+                    Text("This Vehicle is still used by existing service records. Deleting it will remove the link.")
                 }
-                .padding(.bottom, 32)
-                .animation(.easeInOut, value: showShareLink)
-            }
-
-            .sheet(isPresented: $showingAddVehicle) {
-                AddVehicleView()
-            }
-            .sheet(item: $editingVehicle) {
-                EditVehicleView(vehicle: $0)
-            }
-            .sheet(isPresented: $showingAddProvider) {
-                AddProviderView()
-            }
-            .sheet(item: $editingProvider) {
-                EditProviderFormView(provider: $0)
-            }
-            .sheet(isPresented: $showingAddType) {
-                AddServiceTypeView()
-            }
-            .sheet(item: $editingType) {
-                EditServiceTypeView(type: $0)
-            }
-            .fileImporter(
-                isPresented: $showImporter,
-                allowedContentTypes: [.commaSeparatedText],
-                allowsMultipleSelection: false
-            ) { result in
-                if case let .success(urls) = result, let firstURL = urls.first {
-                    confirmAndImport(from: firstURL)
+                .deleteAlert(object: $confirmedVehicleToDelete, title: "Vehicle") { vehicle in
+                    unlinkVehicle(from: vehicle)
+                    modelContext.delete(vehicle)
+                    try? modelContext.save()
                 }
-            }
-            .sheet(isPresented: $showExporter) {
-                if let exportURL {
-                    ShareLink(item: exportURL) {
+                
+                .alert("Cannot Delete Service Type", isPresented: $showDeleteTypeWarning, presenting: typeToDelete) { type in
+                    Button("Cancel", role: .cancel) {
+                        typeToDelete = nil
+                        confirmedTypeToDelete = nil
+                    }
+                    Button("Delete Anyway", role: .destructive) {
+                        confirmedTypeToDelete = type
+                        typeToDelete = nil
+                        showDeleteTypeWarning = false
+                    }
+                } message: { type in
+                    Text("This Service Type is still used by existing service records. Deleting it will remove the link.")
+                }
+                .deleteAlert(object: $confirmedTypeToDelete, title: "Service Type") { type in
+                    unlinkServiceType(from: type)
+                    modelContext.delete(type)
+                    try? modelContext.save()
+                }
+                
+                .alert("Cannot Delete Service Provider", isPresented: $showDeleteProviderWarning, presenting: providerToDelete) { provider in
+                    Button("Cancel", role: .cancel) {
+                        providerToDelete = nil
+                        confirmedProviderToDelete = nil
+                    }
+                    Button("Delete Anyway", role: .destructive) {
+                        confirmedProviderToDelete = provider
+                        providerToDelete = nil
+                        showDeleteProviderWarning = false
+                    }
+                } message: { provider in
+                    Text("This Service Provider is still used by existing service records. Deleting it will remove the link.")
+                }
+                .deleteAlert(object: $confirmedProviderToDelete, title: "Service Provider") { provider in
+                    unlinkServiceProvider(from: provider)
+                    modelContext.delete(provider)
+                    try? modelContext.save()
+                }
+                
+                
+                .sheet(isPresented: $showingAddVehicle) {
+                    AddVehicleView()
+                }
+                .sheet(item: $editingVehicle) {
+                    EditVehicleView(vehicle: $0)
+                }
+                .sheet(isPresented: $showingAddProvider) {
+                    AddProviderView()
+                }
+                .sheet(item: $editingProvider) {
+                    EditProviderFormView(provider: $0)
+                }
+                .sheet(isPresented: $showingAddType) {
+                    AddServiceTypeView()
+                }
+                .sheet(item: $editingType) {
+                    EditServiceTypeView(type: $0)
+                }
+                
+                .sheet(item: $exportedFile, onDismiss: {
+                    showToast = true
+                    //exportedFile = nil  // clean up state
+                }) { file in
+                    ShareLink(item: file.url) {
                         Label("Share Exported CSV", systemImage: "square.and.arrow.up")
+                            .font(.title2)
+                            .padding()
+                            .onAppear {
+                                // 🎯 Auto-dismiss after short delay
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 15.0) {
+                                    exportedFile = nil
+                                }
+                            }
                     }
-                    .padding()
+                    
+                }
+                
+                //            .sheet(item: $exportedFile) { file in
+                //                VStack(spacing: 20) {
+                //                    ShareLink(item: file.url) {
+                //                        Label("Share Exported CSV", systemImage: "square.and.arrow.up")
+                //                    }
+                //                    Button("Done") {
+                //                        exportedFile = nil
+                //                    }
+                //                }
+                //                .padding()
+                //            }
+                
+                
+                .fileImporter(
+                    isPresented: $showImporter,
+                    allowedContentTypes: [.commaSeparatedText],
+                    allowsMultipleSelection: false
+                ) { result in
+                    if case let .success(urls) = result, let firstURL = urls.first {
+                        confirmAndImport(from: firstURL)
+                    }
                 }
             }
+            
+            if showToast {
+                VStack {
+                    Spacer()
+                    Text("✅ Export complete")
+                        .padding()
+                        .background(Color.green.opacity(0.8))
+                        .cornerRadius(10)
+                        .foregroundColor(.white)
+                        .transition(.move(edge: .bottom))
+                        .animation(.easeInOut, value: showToast)
+                }
+                .padding(.bottom, 40)
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                        showToast = false
+                    }
+                }
+            }
+            
+        }//end of ZStack
+        
 
-        }
-    }
+        
+    }// end of view
 
     // MARK: - Sections
 
@@ -178,7 +216,7 @@ struct SettingsView: View {
                 } label: {
                     VStack(alignment: .leading) {
                         Text("\(vehicle.modelYear.description) \(vehicle.name)")
-                        Text("Mileage: \(vehicle.currentMileage)")
+                        Text("Current Mileage: \(vehicle.currentMileage)")
                             .font(.footnote)
                             .foregroundColor(.secondary)
                     }
@@ -206,12 +244,10 @@ struct SettingsView: View {
                     editingProvider = provider
                 } label: {
                     VStack(alignment: .leading) {
-                        HStack {
                             Text(provider.name)
-                            Spacer()
                             Text(provider.contactInfo)
                                 .font(.footnote)
-                        }
+                                .foregroundColor(.secondary)
                     }
                 }
                 .swipeActions {
@@ -236,7 +272,13 @@ struct SettingsView: View {
                 Button {
                     editingType = type
                 } label: {
-                    Text(type.name)
+                    HStack {
+                        Text(type.name)
+                        Spacer()
+                        Text("Interval: \(type.suggestedMileage ?? 0)")
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                    }
                 }
                 .swipeActions {
                     Button(role: .destructive) {
@@ -257,9 +299,10 @@ struct SettingsView: View {
     var dataManagementSection: some View {
         Section("Data Management") {
             Button("Export Service Records") {
+                showShareLink = false
+                showExporter = true
                 exportCSV()
             }
-
             Button("Import from CSV") {
                 showImporter = true
             }
@@ -268,13 +311,98 @@ struct SettingsView: View {
 
     // MARK: - Import & Export Helpers
 
-    
-    func generateCSV(from records: [ServiceRecord]) -> String {
-        var lines = ["date,mileage,cost,type,provider,contactInfo,vehicle,year,vin,license,typeSuggestedMileage"]
+    private func exportCSV() {
+        let imageDirectory = URL.documentsDirectory.appendingPathComponent("ExportedImages")
+
+        // Ensure ExportedImages folder exists
+        if !FileManager.default.fileExists(atPath: imageDirectory.path) {
+            try? FileManager.default.createDirectory(at: imageDirectory, withIntermediateDirectories: true)
+        }
+
+        let filename = "service_export.csv"
+        let csvURL = URL.documentsDirectory.appendingPathComponent(filename)
+        let zipURL = URL.documentsDirectory.appendingPathComponent("service_export.zip")
+
+        // Generate CSV content
+        let csv = generateCSV(from: allRecords, imageDirectory: imageDirectory)
+
+        do {
+            // Write CSV
+            try csv.write(to: csvURL, atomically: true, encoding: .utf8)
+
+            // Collect files: CSV + Images
+            var filesToZip: [URL] = [csvURL]
+            if let imageFiles = try? FileManager.default.contentsOfDirectory(at: imageDirectory, includingPropertiesForKeys: nil) {
+                filesToZip.append(contentsOf: imageFiles)
+            }
+
+            // Create ZIP archive
+            try FileManager.default.zipItem(
+                at: csvURL.deletingLastPathComponent(), // directory containing the files
+                to: zipURL,
+                shouldKeepParent: false
+            )
+
+            // Update exported file reference if needed
+            if FileManager.default.fileExists(atPath: zipURL.path) {
+                exportedFile = ExportedFile(url: zipURL)
+                print("✅ ZIP export successful at: \(zipURL.path)")
+            } else {
+                print("⚠️ ZIP file not found after creation")
+            }
+
+        } catch {
+            print("❌ Export failed: \(error)")
+        }
+    }
+
+//    private func exportCSV() {
+//        
+//        let imageDirectory = URL.documentsDirectory.appendingPathComponent("ExportedImages")
+//        try? FileManager.default.createDirectory(at: imageDirectory, withIntermediateDirectories: true)
+//        
+//
+//        if !FileManager.default.fileExists(atPath: imageDirectory.path) {
+//            try? FileManager.default.createDirectory(at: imageDirectory, withIntermediateDirectories: true)
+//        }
+//
+//        var filesToZip: [URL] = []
+//        
+//        let csv = generateCSV(from: allRecords, imageDirectory: imageDirectory)
+//        let filename = "service_export.csv"
+//        let csvURL = URL.documentsDirectory.appendingPathComponent(filename)
+//        filesToZip.append(csvURL)
+//        //print("Final csv output: \n\(csv)")
+//        //print("CSV will be saved to: \(csvURL)")
+//        if let imageFiles = try? FileManager.default.contentsOfDirectory(at: imageDirectory, includingPropertiesForKeys: nil){
+//            filesToZip.append(contentsOf: imageFiles)}
+//        let zipURL = URL.documentsDirectory.appendingPathComponent("service_export.zip")
+//        
+//        do {
+//            try csv.write(to: csvURL, atomically: true, encoding: .utf8)
+//
+//            if FileManager.default.fileExists(atPath: csvURL.path) {
+//                exportedFile = ExportedFile(url: csvURL)
+//            } else {
+//                print("⚠️ File not found after write: \(csvURL)")
+//            }
+//
+//        } catch {
+//            print("❌ Failed to write CSV: \(error)")
+//        }
+//
+//    }
+
+    private func generateCSV(from records: [ServiceRecord], imageDirectory: URL) -> String {
+        print("total records received: \(records.count)")
+        
+        var lines = ["date,mileage,cost,type,provider,contactInfo,vehicle,year,vin,license,typeSuggestedMileage,imageFilename"]
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
 
         for record in records {
+            
+            print("processing record: \(record)")
             
             guard let vehicle = record.vehicle,
                   let provider = record.provider,
@@ -296,13 +424,34 @@ struct SettingsView: View {
             let license = vehicle.license
             let suggestedMilage = type.suggestedMileage ?? 0
 
-            lines.append("\(date),\(mileage),\(cost),\(typeName),\(providerName),\(contactInfo),\(vehicleName),\(year),\(vin),\(license),\(suggestedMilage)")
+            var imageFilename: String = ""
+
+            if let photoData = vehicle.photoData {
+                let idHash = vehicle.persistentModelID.id.hashValue
+                let sanitizedID = String(idHash).replacingOccurrences(of: "[^a-zA-Z0-9]", with: "_", options: .regularExpression)
+                let filename = "Vehicle_\(sanitizedID).jpg"
+                //let imageDirectory = FileManager.default.temporaryDirectory
+
+                let imageURL = imageDirectory.appendingPathComponent(filename)
+
+                do {
+                    try photoData.write(to: imageURL)
+                    imageFilename = filename
+                } catch {
+                    print("❌ Failed to save image for \(vehicle.name): \(error)")
+                    imageFilename = "" // fallback
+                }
+            }
+
+            lines.append("\(date),\(mileage),\(cost),\(typeName),\(providerName),\(contactInfo),\(vehicleName),\(year),\(vin),\(license),\(suggestedMilage),\(imageFilename)")
+            
+            print ("appended line for \(vehicle.name)")
         }
 
         return lines.joined(separator: "\n")
     }
 
-    func isValid<T: PersistentModel>(_ model: T) -> Bool {
+    private func isValid<T: PersistentModel>(_ model: T) -> Bool {
         let id = model.persistentModelID
         let descriptor = FetchDescriptor<T>(
             predicate: #Predicate {
@@ -313,7 +462,7 @@ struct SettingsView: View {
     }
 
     
-    func isServiceTypeInUse(_ serviceType: ServiceType) -> Bool {
+    private func isServiceTypeInUse(_ serviceType: ServiceType) -> Bool {
         let typeID = serviceType.persistentModelID
         let descriptor = FetchDescriptor<ServiceRecord>(
             predicate: #Predicate<ServiceRecord>{
@@ -323,7 +472,7 @@ struct SettingsView: View {
         return (try? modelContext.fetch(descriptor))?.isEmpty == false
     }
 
-    func isServiceProviderInUse(_ provider: ServiceProvider) -> Bool {
+    private func isServiceProviderInUse(_ provider: ServiceProvider) -> Bool {
         let providerID = provider.persistentModelID
         let descriptor = FetchDescriptor<ServiceRecord>(
             predicate: #Predicate {
@@ -333,7 +482,7 @@ struct SettingsView: View {
         return (try? modelContext.fetch(descriptor))?.isEmpty == false
     }
 
-    func isVehicleInUse(_ vehicle: Vehicle) -> Bool {
+    private func isVehicleInUse(_ vehicle: Vehicle) -> Bool {
         let vehicleID = vehicle.persistentModelID
         let descriptor = FetchDescriptor<ServiceRecord>(
             predicate: #Predicate {
@@ -344,7 +493,7 @@ struct SettingsView: View {
     }
     
     
-    func handleServiceTypeDeleteRequest(_ type: ServiceType) {
+    private func handleServiceTypeDeleteRequest(_ type: ServiceType) {
         let typeID = type.persistentModelID
         let descriptor = FetchDescriptor<ServiceRecord>(
             predicate: #Predicate {
@@ -359,7 +508,7 @@ struct SettingsView: View {
         }
     }
     
-    func handleProviderDeleteRequest(_ provider: ServiceProvider) {
+    private func handleProviderDeleteRequest(_ provider: ServiceProvider) {
         let providerID = provider.persistentModelID
         let descriptor = FetchDescriptor<ServiceRecord>(
             predicate: #Predicate {
@@ -375,7 +524,7 @@ struct SettingsView: View {
         }
     }
 
-    func handleVehicleDeleteRequest(_ vehicle: Vehicle) {
+    private func handleVehicleDeleteRequest(_ vehicle: Vehicle) {
         let vehicleID = vehicle.persistentModelID
         let descriptor = FetchDescriptor<ServiceRecord>(
             predicate: #Predicate {
@@ -392,7 +541,7 @@ struct SettingsView: View {
     }
 
     
-    func unlinkServiceType(from type: ServiceType) {
+    private func unlinkServiceType(from type: ServiceType) {
         let typeID = type.persistentModelID
 
         let descriptor = FetchDescriptor<ServiceRecord>(
@@ -408,7 +557,7 @@ struct SettingsView: View {
         }
     }
 
-    func unlinkServiceProvider(from provider: ServiceProvider) {
+    private func unlinkServiceProvider(from provider: ServiceProvider) {
         let providerID = provider.persistentModelID
         let descriptor = FetchDescriptor<ServiceRecord>(
             predicate: #Predicate {
@@ -423,7 +572,7 @@ struct SettingsView: View {
         }
     }
 
-    func unlinkVehicle(from vehicle: Vehicle) {
+    private func unlinkVehicle(from vehicle: Vehicle) {
         let vehicleID = vehicle.persistentModelID
         let descriptor = FetchDescriptor<ServiceRecord>(
             predicate: #Predicate {
@@ -440,36 +589,67 @@ struct SettingsView: View {
 
     
 
-    
 
-    func exportCSV() {
-        let csv = generateCSV(from: allRecords)
-        let filename = "service_export.csv"
-        let url = URL.documentsDirectory.appendingPathComponent(filename)
+
+
+
+    private func confirmAndImport(from url: URL) {
+        let alert = buildImportConfirmationAlert(for: url)
         
-        do {
-            try csv.write(to: url, atomically: true, encoding: .utf8)
-            print("✅ CSV written to: \(url)")
-
-            exportURL = url
-            showShareLink = true
-
-        } catch {
-            print("❌ Failed to write CSV: \(error)")
+        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootVC = scene.windows.first?.rootViewController {
+            rootVC.present(alert, animated: true)
         }
     }
 
-    func confirmAndImport(from url: URL) {
-        let alert = UIAlertController(title: "Replace Existing Records?",
-                                      message: "This will delete all current service records before importing. Continue?",
-                                      preferredStyle: .alert)
+    private func buildImportConfirmationAlert(for url: URL) -> UIAlertController {
+        let alert = UIAlertController(
+            title: "Replace Existing Records?",
+            message: "This will delete all current service records before importing. Continue?",
+            preferredStyle: .alert
+        )
 
-        alert.addAction(UIAlertAction(title: "Import", style: .destructive) { _ in
-            deleteExistingServiceRecords()
-            importServiceRecords(from: url)
-        })
+        let importAction = UIAlertAction(title: "Import", style: .destructive) { _ in
+            if url.startAccessingSecurityScopedResource() {
+                defer { url.stopAccessingSecurityScopedResource() }
 
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+                // ✅ Readability test before delete
+                guard let _ = try? String(contentsOf: url, encoding: .utf8) else {
+                    print("❌ Unable to read file before deletion")
+                    showImportFailurePopup()
+                    return
+                }
+
+                // 🔥 Delete existing records first
+                deleteExistingServiceRecords()
+
+                // 📥 Then import new ones
+                importServiceRecords(from: url) { success in
+                    if !success {
+                        print("⚠️ Import failed after deletion")
+                        showImportFailurePopup()
+                    }
+                }
+            } else {
+                print("❌ Failed to access security scoped resource")
+                showImportFailurePopup()
+            }
+        }
+
+        alert.addAction(importAction)
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        return alert
+    }
+
+
+
+    private func showImportFailurePopup() {
+        let alert = UIAlertController(
+            title: "Import Failed",
+            message: "We couldn’t read the CSV file. Please check the format and try again.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
 
         if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let root = scene.windows.first?.rootViewController {
@@ -477,7 +657,7 @@ struct SettingsView: View {
         }
     }
     
-    func deleteExistingServiceRecords() {
+    private func deleteExistingServiceRecords() {
         let recordDescriptor = FetchDescriptor<ServiceRecord>()
         let vehicleDescriptor = FetchDescriptor<Vehicle>()
         let providerDescriptor = FetchDescriptor<ServiceProvider>()
@@ -501,24 +681,29 @@ struct SettingsView: View {
         }
     }
 
-    func importServiceRecords(from url: URL) {
-        guard let content = try? String(contentsOf: url, encoding: .utf8) else {
+    private func importServiceRecords(from url: URL, completion: @escaping (Bool) -> Void) {
+        guard let content = try? String(contentsOf: url, encoding: .ascii) else {
             print("❌ Unable to read CSV file")
+            completion(false)
             return
         }
 
-        let rows = content.components(separatedBy: .newlines).dropFirst()
+        let rows = content
+            .components(separatedBy: .newlines)
+            .dropFirst() // skip header row
+
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
 
         for row in rows {
             let fields = row.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
 
-            guard fields.count >= 10 else {
+            guard fields.count >= 12 else {
                 print("⚠️ Skipping malformed row: \(row)")
                 continue
             }
 
+            // 📅 Parse row fields
             let date = dateFormatter.date(from: fields[0]) ?? .now
             let mileage = Int(fields[1]) ?? 0
             let cost = Double(fields[2]) ?? 0.0
@@ -530,42 +715,79 @@ struct SettingsView: View {
             let vin = fields[8]
             let license = fields[9]
             let suggestedMileage = Int(fields[10]) ?? 0
-
-            var vehicle = fetchExistingVehicle(name: vehicleName, year: vehicleYear, vin: vin, license: license)
+            let imageFilename = fields[11]
             
-            if vehicle == nil {
-                vehicle = Vehicle(name: vehicleName, modelYear: vehicleYear, vin: vin, license: license, currentMileage: mileage)
-                modelContext.insert(vehicle!)
+            
+            
+            let imageDirectory = URL.documentsDirectory.appendingPathComponent("ExportedImages")
+            let imageURL = imageDirectory.appendingPathComponent(imageFilename)
+            var photoData: Data? = nil
+            if FileManager.default.fileExists(atPath: imageURL.path) {
+                photoData = try? Data(contentsOf: imageURL)
+            } else {
+                print("⚠️ Image not found: \(imageURL.lastPathComponent)")
             }
 
-            // 🔎 Match or create Provider
-            var provider = fetchExitingProvider(name: providerName, contactInfo: contactInfo)
-            if provider == nil {
-                provider = ServiceProvider(name: providerName, contactInfo: contactInfo)
-                modelContext.insert(provider!)
-            }
-
-            // 🔎 Match or create Type
-            var type = fetchExistingServiceType(name: typeName)
-            if type == nil {
-                type = ServiceType(name: typeName, suggestedMileage: suggestedMileage)
-                modelContext.insert(type!)
+            if photoData == nil {
+                guard let iCloudURL = FileManager.default.url(forUbiquityContainerIdentifier: "iCloud.com.jacob.ServiceIt")?
+                    .appendingPathComponent("Documents/ExportedImages") else {
+                    print("❌ iCloud container not available")
+                    return
+                }
+                let imageURL = iCloudURL.appendingPathComponent(imageFilename)
+                photoData = try? Data(contentsOf: imageURL)
             }
             
 
-            // 📝 Create and link the ServiceRecord
-            let record = ServiceRecord(vehicle: vehicle!, type: type!, cost: cost, date: date, mileage: mileage)
+            // 🚗 Vehicle matching or creation
+            let vehicle = fetchExistingVehicle(name: vehicleName, year: vehicleYear, vin: vin, license: license)
+                ?? {
+                    let newVehicle = Vehicle(name: vehicleName, modelYear: vehicleYear, vin: vin, license: license, currentMileage: mileage)
+                    newVehicle.photoData = photoData
+                    modelContext.insert(newVehicle)
+                    return newVehicle
+                }()
+
+            // 🏢 Provider matching or creation
+            let provider = fetchExitingProvider(name: providerName, contactInfo: contactInfo)
+                ?? {
+                    let newProvider = ServiceProvider(name: providerName, contactInfo: contactInfo)
+                    modelContext.insert(newProvider)
+                    return newProvider
+                }()
+
+            // 🔧 ServiceType matching or creation
+            let type = fetchExistingServiceType(name: typeName)
+                ?? {
+                    let newType = ServiceType(name: typeName, suggestedMileage: suggestedMileage)
+                    modelContext.insert(newType)
+                    return newType
+                }()
+
+            // 📝 Final Record
+            let record = ServiceRecord(
+                vehicle: vehicle,
+                type: type,
+                cost: cost,
+                date: date,
+                mileage: mileage
+            )
             record.provider = provider
             modelContext.insert(record)
         }
 
-        try? modelContext.save()
-        print("✅ Import complete")
+        do {
+            try modelContext.save()
+            print("✅ Import complete")
+            completion(true)
+        } catch {
+            print("❌ Failed to save context: \(error.localizedDescription)")
+            completion(false)
+        }
     }
 
 
-
-    func fetchExistingVehicle(name: String, year: Int, vin: String, license: String) -> Vehicle? {
+    private func fetchExistingVehicle(name: String, year: Int, vin: String, license: String) -> Vehicle? {
         let descriptor = FetchDescriptor<Vehicle>(
             predicate: #Predicate {
                 $0.name == name &&
@@ -577,7 +799,7 @@ struct SettingsView: View {
         return try? modelContext.fetch(descriptor).first
     }
     
-    func fetchExitingProvider(name: String, contactInfo: String) -> ServiceProvider? {
+    private func fetchExitingProvider(name: String, contactInfo: String) -> ServiceProvider? {
         let descriptor = FetchDescriptor<ServiceProvider>(
             predicate: #Predicate {
                 $0.name == name &&
@@ -587,7 +809,7 @@ struct SettingsView: View {
         return try? modelContext.fetch(descriptor).first
     }
 
-    func fetchExistingServiceType(name rawName: String) -> ServiceType? {
+    private func fetchExistingServiceType(name rawName: String) -> ServiceType? {
         let normalizedName = rawName.trimmingCharacters(in: .whitespacesAndNewlines)
 
         let descriptor = FetchDescriptor<ServiceType>(

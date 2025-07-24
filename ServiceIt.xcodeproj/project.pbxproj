@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		03E2DEAB2E31E53F00397311 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 03E2DEAA2E31E53F00397311 /* ZIPFoundation */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		038A023C2E22C44D00D44DB6 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -65,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				03E2DEAB2E31E53F00397311 /* ZIPFoundation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -91,6 +96,7 @@
 				038A02302E22C44C00D44DB6 /* ServiceIt */,
 				038A023E2E22C44D00D44DB6 /* ServiceItTests */,
 				038A02482E22C44D00D44DB6 /* ServiceItUITests */,
+				03E2DEA92E31E53F00397311 /* Frameworks */,
 				038A022F2E22C44C00D44DB6 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -103,6 +109,13 @@
 				038A02452E22C44D00D44DB6 /* ServiceItUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		03E2DEA92E31E53F00397311 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -125,6 +138,7 @@
 			);
 			name = ServiceIt;
 			packageProductDependencies = (
+				03E2DEAA2E31E53F00397311 /* ZIPFoundation */,
 			);
 			productName = ServiceIt;
 			productReference = 038A022E2E22C44C00D44DB6 /* ServiceIt.app */;
@@ -208,6 +222,9 @@
 			);
 			mainGroup = 038A02252E22C44B00D44DB6;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				03E2DEA82E31E43900397311 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 038A022F2E22C44C00D44DB6 /* Products */;
 			projectDirPath = "";
@@ -409,6 +426,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ServiceIt/ServiceIt.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9B99PSW7RH;
@@ -431,6 +449,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = co.jacobsdesigns..ServiceIt;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -446,6 +465,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ServiceIt/ServiceIt.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9B99PSW7RH;
@@ -468,6 +488,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = co.jacobsdesigns..ServiceIt;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -589,6 +610,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		03E2DEA82E31E43900397311 /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/weichsel/ZIPFoundation.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.19;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		03E2DEAA2E31E53F00397311 /* ZIPFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 03E2DEA82E31E43900397311 /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
+			productName = ZIPFoundation;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 038A02262E22C44B00D44DB6 /* Project object */;
 }

@@ -26,6 +26,7 @@ struct ServiceRecordFormView: View {
     @State private var mileage: String = ""
     @State private var showingTypeManager = false
     @State private var showingDeleteAlert = false
+    @State private var showingProviderManager = false
     @State private var showCalendar = false
 
     enum FieldFocus: Hashable {
@@ -95,9 +96,12 @@ struct ServiceRecordFormView: View {
                     TextField("Mileage", text: $mileage)
                         .keyboardType(.decimalPad)
                         .focused($focusedField, equals: .mileage)
-                        .onChange(of: mileage){ newValue in
-                            mileage = newValue.filter { $0.isNumber }
+                        .onChange(of: mileage) {
+                            mileage = mileage.filter { $0.isNumber }
                         }
+//                        .onChange(of: mileage){ newValue in
+//                            mileage = newValue.filter { $0.isNumber }
+//                        }
                     
                     Button {
                         showCalendar = true
@@ -147,11 +151,17 @@ struct ServiceRecordFormView: View {
                     .sheet(isPresented: $showingTypeManager) {
                         ServiceTypeListView()
                     }
+                    Button("Add Service Provider") {
+                        showingProviderManager = true
+                    }
+                    .sheet(isPresented: $showingProviderManager) {
+                        AddProviderView()
+                    }
                 }
                 
             }
             .toolbar {
-                ToolbarItem(placement: .cancellationAction){
+                ToolbarItem(placement: .topBarTrailing){
                     Button("Cancel"){
                         dismiss()
                     }

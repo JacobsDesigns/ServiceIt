@@ -75,3 +75,8 @@ struct ServiceTypeListView: View {
         }
     }
 }
+
+#Preview {
+    ServiceTypeListView()
+        .modelContainer(PreviewContainer.shared)
+}

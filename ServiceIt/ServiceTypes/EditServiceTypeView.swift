@@ -40,7 +40,7 @@ struct EditServiceTypeView: View {
             }
             .navigationTitle("Edit Service Type")
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button("Cancel") { dismiss() }
                 }
                 ToolbarItemGroup(placement: .keyboard) {
@@ -59,4 +59,12 @@ struct EditServiceTypeView: View {
     private func hideKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
+}
+
+#Preview {
+    let container = PreviewContainer.shared
+    let mockType = MockData.allServiceTypes().first ?? ServiceType(name: "Oil Change", suggestedMileage: 5000)
+
+    return EditServiceTypeView(type: mockType)
+        .modelContainer(container)
 }

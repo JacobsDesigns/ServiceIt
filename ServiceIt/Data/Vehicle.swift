@@ -10,6 +10,7 @@ import Foundation
 
 @Model
 class Vehicle {
+    var id = UUID()
     var name: String
     var modelYear: Int
     var vin: String

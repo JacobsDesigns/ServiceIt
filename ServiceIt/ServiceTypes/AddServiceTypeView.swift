@@ -37,7 +37,7 @@ struct AddServiceTypeView: View {
             }
             .navigationTitle("Add Service Type")
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button("Cancel") { dismiss() }
                 }
                 ToolbarItemGroup(placement: .keyboard) {
@@ -53,4 +53,9 @@ struct AddServiceTypeView: View {
     private func hideKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
+}
+
+#Preview {
+    AddServiceTypeView()
+        .modelContainer(PreviewContainer.shared)
 }
