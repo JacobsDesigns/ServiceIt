@@ -93,10 +93,11 @@ struct AddVehicleView: View {
 
         let newVehicle = Vehicle(
             name: name,
-            modelYear: year,
+            modelYear: Int(modelYearString) ?? 0,
             vin: vin,
-            currentMileage: mileageValue,
-            license: license
+            license: license,
+            currentMileage: mileage ?? 0,
+            photoData: selectedImageData
         )
 
         modelContext.insert(newVehicle)

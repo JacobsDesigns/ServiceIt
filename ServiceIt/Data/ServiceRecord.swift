@@ -25,3 +25,15 @@ class ServiceRecord {
         self.provider = provider
     }
 }
+extension ServiceRecord {
+    static func mock(type: String, cost: Double, mileage: Int) -> ServiceRecord {
+        ServiceRecord(
+            vehicle: nil,
+            type: ServiceType(name: type),
+            cost: cost,
+            date: .now,
+            mileage: Int.random(in: 10000...20000),
+            provider: ServiceProvider(name: "Mock Provider", contactInfo: "Info")
+        )
+    }
+}

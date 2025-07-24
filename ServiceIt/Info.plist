@@ -43,5 +43,7 @@
 			<string></string>
 		</dict>
 	</array>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We use your photo to help identify your vehicle</string>
 </dict>
 </plist>
