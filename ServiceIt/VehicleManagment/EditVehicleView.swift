@@ -74,7 +74,7 @@ struct EditVehicleView: View {
 }
 
 #Preview{
-    EditVehicleView(vehicle: MockData.vehicle1)
+    EditVehicleView(vehicle: MockData.allVehicles().first!)
         .modelContainer(PreviewContainer.shared)
     
 }

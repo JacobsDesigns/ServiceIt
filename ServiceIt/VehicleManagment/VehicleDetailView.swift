@@ -66,7 +66,7 @@ struct VehicleDetailView: View {
 
 
 #Preview {
-    VehicleDetailView(vehicle: MockData.vehicle1)
+    VehicleDetailView(vehicle: MockData.allVehicles().first!)
         .modelContainer(PreviewContainer.shared)
 }
 

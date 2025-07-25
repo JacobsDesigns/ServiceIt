@@ -45,12 +45,12 @@ struct PredictiveInsightsSection: View {
 }
 
 
-#Preview("Predictive Insights") {
-    let mockRecords = [
-        ServiceRecord.mock(type: "Oil Change", cost: 45.00, mileage: 10000),
-        ServiceRecord.mock(type: "Oil Change", cost: 48.00, mileage: 15000),
-        ServiceRecord.mock(type: "Oil Change", cost: 50.00, mileage: 20000)
-    ]
-     PredictiveInsightsSection(records: mockRecords)
-}
+//#Preview("Predictive Insights") {
+//    let mockRecords = [
+////        ServiceRecord.mock(type: "Oil Change", cost: 45.00, mileage: 10000),
+////        ServiceRecord.mock(type: "Oil Change", cost: 48.00, mileage: 15000),
+////        ServiceRecord.mock(type: "Oil Change", cost: 50.00, mileage: 20000)
+//    ]
+//     PredictiveInsightsSection(records: mockRecords)
+//}
 

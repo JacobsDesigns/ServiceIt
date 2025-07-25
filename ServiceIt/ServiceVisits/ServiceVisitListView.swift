@@ -7,21 +7,21 @@
 import SwiftUI
 import SwiftData
 
-struct ServiceRecordListView: View {
+struct ServiceVisitListView: View {
     @Environment(\.modelContext) private var modelContext
     var vehicle: Vehicle
-    @Query var allRecords: [ServiceRecord]
+    @Query var allVisits: [ServiceVisit]
 
     @State private var searchText = ""
     @Binding var sortOption: RecordSortOption
     var selectedYear: Int?
 
     @State private var showingAddRecord = false
-    @State private var recordToEdit: ServiceRecord?
-    
-    var filteredRecords: [ServiceRecord] {
-        let validRecords = allRecords.filter {
-            $0.type != nil && $0.provider != nil && $0.vehicle != nil
+    @State private var recordToEdit: ServiceVisit?
+
+    var filteredRecords: [ServiceVisit] {
+        let validRecords = allVisits.filter {
+            !$0.items.isEmpty && $0.provider != nil && $0.vehicle != nil
         }
 
         let vehicleRecords = validRecords.filter {
@@ -33,12 +33,12 @@ struct ServiceRecordListView: View {
         }
 
         let searched = searchText.isEmpty ? yearFiltered : yearFiltered.filter {
-            guard let typeName = $0.type?.name,
-                  let providerName = $0.provider?.name else { return false }
-
-            return typeName.localizedCaseInsensitiveContains(searchText) ||
-                   providerName.localizedCaseInsensitiveContains(searchText) ||
-                   String(Calendar.current.component(.year, from: $0.date)).contains(searchText)
+            let itemMatches = $0.items.contains {
+                $0.name.localizedCaseInsensitiveContains(searchText)
+            }
+            let providerMatches = $0.provider?.name.localizedCaseInsensitiveContains(searchText) ?? false
+            let yearMatches = String(Calendar.current.component(.year, from: $0.date)).contains(searchText)
+            return itemMatches || providerMatches || yearMatches
         }
 
         switch sortOption {
@@ -57,35 +57,28 @@ struct ServiceRecordListView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-
             List {
                 ForEach(filteredRecords) { record in
                     Button {
                         recordToEdit = record
                     } label: {
                         VStack(alignment: .leading, spacing: 6) {
-                            
                             HStack {
-
-                                if let type = record.type, isValidType(type) {
-                                    Text(type.name)
-                                        .font(.headline)
-                                } else {
-                                    Text("Unknown Service")
-                                        .font(.headline)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    ForEach(record.items) { item in
+                                        if isValidItem(item) {
+                                            Text(item.name)
+                                                .font(.headline)
+                                        }
+                                    }
                                 }
 
                                 Spacer()
-                                
-                                if let provider = record.provider {
-                                    Text(provider.name)
-                                        .font(.footnote)
-                                        .italic()
-                                        .foregroundColor(.secondary)
-                                } else {
-                                    Text("Unknown Provider")
-                                        .font(.footnote)
-                                }
+
+                                Text(record.provider?.name ?? "Unknown Provider")
+                                    .font(.footnote)
+                                    .italic()
+                                    .foregroundColor(.secondary)
                             }
 
                             Text("Cost: \(record.cost, format: .currency(code: "USD"))")
@@ -100,26 +93,21 @@ struct ServiceRecordListView: View {
                         }
                     }
                 }
-
             }
             .listRowSpacing(4)
             .searchable(text: $searchText)
-            
-            if !filteredRecords.isEmpty {
- 
-                    HStack {
-                        Text("Total Cost")
-                            .font(.headline)
-                        Spacer()
-                        Text(totalCost, format: .currency(code: "USD"))
-                            .font(.headline)
-                    }
-                    .padding()
-                
-            }
-            
-        }
 
+            if !filteredRecords.isEmpty {
+                HStack {
+                    Text("Total Cost")
+                        .font(.headline)
+                    Spacer()
+                    Text(totalCost, format: .currency(code: "USD"))
+                        .font(.headline)
+                }
+                .padding()
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
@@ -130,31 +118,29 @@ struct ServiceRecordListView: View {
             }
         }
         .sheet(isPresented: $showingAddRecord) {
-            ServiceRecordFormView(vehicle: vehicle)
+            ServiceVisitFormView()//(vehicle: vehicle)
         }
         .sheet(item: $recordToEdit) { record in
-            ServiceRecordFormView(recordToEdit: record, vehicle: vehicle)
+            ServiceVisitFormView()//(recordToEdit: record, vehicle: vehicle)
         }
     }
 
-    func isValidType(_ type: ServiceType?) -> Bool {
-        guard let type else { return false }
-        let typeID = type.persistentModelID
-        let descriptor = FetchDescriptor<ServiceType>(
-            predicate: #Predicate { $0.persistentModelID == typeID }
+    func isValidItem(_ item: ServiceItem) -> Bool {
+        let itemID = item.persistentModelID
+        let descriptor = FetchDescriptor<ServiceItem>(
+            predicate: #Predicate { $0.persistentModelID == itemID }
         )
         return (try? modelContext.fetch(descriptor).first) != nil
     }
-
-    
 }
+
 
 #Preview("Service Record List") {
     struct PreviewWrapper: View {
         @State private var sortOption: RecordSortOption = .dateDescending
 
         var body: some View {
-            ServiceRecordListView(vehicle: MockData.vehicle1, sortOption: $sortOption)
+            ServiceVisitListView(vehicle: MockData.allVehicles().first!, sortOption: $sortOption)
                 .modelContainer(PreviewContainer.shared)
         }
     }

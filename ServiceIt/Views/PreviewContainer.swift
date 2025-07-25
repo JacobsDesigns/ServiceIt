@@ -12,7 +12,7 @@ enum PreviewContainer {
         let schema = Schema([
             Vehicle.self,
             ServiceProvider.self,
-            ServiceType.self,
+            ServiceItem.self,
             ServiceRecord.self
         ])
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
@@ -24,17 +24,28 @@ enum PreviewContainer {
             fatalError("❌ Failed to build preview container: \(error)")
         }
 
-//        let container = try! ModelContainer(for: schema, configurations: [config])
-//        seedMockData(into: container.mainContext)
-//        return container
     }()
-
     private static func seedMockData(into context: ModelContext) {
-        MockData.allVehicles().forEach { context.insert($0) }
-        MockData.allProviders().forEach { context.insert($0) }
-        MockData.allServiceTypes().forEach { context.insert($0) }
-        MockData.allRecords().forEach { context.insert($0) }
+        let vehicles = MockData.allVehicles()
+        let providers = MockData.allProviders()
+
+        vehicles.forEach { context.insert($0) }
+        providers.forEach { context.insert($0) }
+
+        for (index, vehicle) in vehicles.enumerated() {
+            let provider = providers[index % providers.count]
+            let visits = MockData.generateVisits(for: vehicle, provider: provider, count: 3)
+            visits.forEach { context.insert($0) }
+        }
+
         try? context.save()
     }
+
+//    private static func seedMockData(into context: ModelContext) {
+//        MockData.allVehicles().forEach { context.insert($0) }
+//        MockData.allProviders().forEach { context.insert($0) }
+//        //MockData.generateVisits(for: <#Vehicle#>, count: <#Int#>).forEach { context.insert($0) }
+//        try? context.save()
+//    }
 }
 

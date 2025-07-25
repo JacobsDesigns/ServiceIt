@@ -42,7 +42,7 @@ struct GarageView: View {
                 }
             }
             .navigationDestination(for: Vehicle.self) { vehicle in
-                ServiceRecordListView(vehicle: vehicle, sortOption: $sortOption)
+                ServiceVisitListView(vehicle: vehicle, sortOption: $sortOption)
             }
             .navigationTitle("My Garage")
             .toolbar {

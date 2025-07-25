@@ -8,17 +8,17 @@ import SwiftData
 import Foundation
 
 @Model
-class ServiceRecord {
+class ServiceRecord : Identifiable {
     @Relationship var vehicle: Vehicle?
-    @Relationship var type: ServiceType?
+    @Relationship var items: [ServiceItem] = []
     var cost: Double
     var date: Date
     var mileage: Int
     @Relationship var provider: ServiceProvider?
     
-    init(vehicle: Vehicle? = nil, type: ServiceType?, cost: Double, date: Date, mileage: Int, provider: ServiceProvider? = nil) {
+    init(vehicle: Vehicle? = nil, items: [ServiceItem] = [], cost: Double, date: Date, mileage: Int, provider: ServiceProvider? = nil) {
         self.vehicle = vehicle
-        self.type = type
+        self.items = items
         self.cost = cost
         self.date = date
         self.mileage = mileage
@@ -26,14 +26,16 @@ class ServiceRecord {
     }
 }
 extension ServiceRecord {
-    static func mock(type: String, cost: Double, mileage: Int) -> ServiceRecord {
-        ServiceRecord(
+    static func mock(types: [String], cost: Double, mileage: Int) -> ServiceRecord {
+        let items = types.map { ServiceItem(name: $0, cost: Double.random(in: 50...200)) }
+        return ServiceRecord(
             vehicle: nil,
-            type: ServiceType(name: type),
+            items: items,
             cost: cost,
             date: .now,
-            mileage: Int.random(in: 10000...20000),
+            mileage: mileage,
             provider: ServiceProvider(name: "Mock Provider", contactInfo: "Info")
         )
     }
 }
+

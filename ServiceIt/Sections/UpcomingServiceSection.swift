@@ -9,7 +9,7 @@ import SwiftUI
 
 struct UpcomingServiceSection: View {
     var vehicle: Vehicle
-    var serviceTypes: [ServiceType]
+    var serviceTypes: [ServiceItem]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -18,9 +18,10 @@ struct UpcomingServiceSection: View {
                 .bold()
 
             let upcoming = serviceTypes.compactMap { type -> String? in
-                guard let interval = type.suggestedMileage, interval > 0 else { return nil }
-                let nextDue = ((vehicle.currentMileage / interval) + 1) * interval
-                guard nextDue > vehicle.currentMileage else { return nil }
+                let interval = type.cost
+                guard interval > 0 else { return nil }
+                let nextDue = ((Double(vehicle.currentMileage) / interval) + 1) * interval
+                guard Int(nextDue) > vehicle.currentMileage else { return nil }
                 return "\(type.name): due at \(nextDue.formatted()) mi"
             }
 
@@ -78,10 +79,10 @@ struct ReminderRow: View {
             )
 
             let types = [
-                ServiceType(name: "Oil Change", suggestedMileage: 5000),
-                ServiceType(name: "Tire Rotation", suggestedMileage: 10000),
-                ServiceType(name: "Brake Inspection", suggestedMileage: nil),
-                ServiceType(name: "Cabin Filter", suggestedMileage: 15000)
+                ServiceItem(name: "Oil Change", cost: 50),
+                ServiceItem(name: "Tire Rotation", cost: 100),
+                ServiceItem(name: "Brake Inspection", cost: 89),
+                ServiceItem(name: "Cabin Filter", cost: 15)
             ]
 
             UpcomingServiceSection(vehicle: vehicle, serviceTypes: types)

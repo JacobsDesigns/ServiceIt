@@ -61,7 +61,7 @@ struct AllRecordsView: View {
                     
                     
                     if let vehicle = selectedVehicle {
-                        ServiceRecordListView(
+                        ServiceVisitListView(
                             vehicle: vehicle,
                             sortOption: $sortOption,
                             selectedYear: selectedYear

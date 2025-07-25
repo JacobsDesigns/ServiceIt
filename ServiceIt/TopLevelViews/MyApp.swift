@@ -33,7 +33,7 @@ struct MyApp: App {
                     }
             }
         }
-        .modelContainer(for: [Vehicle.self, ServiceProvider.self, ServiceType.self, ServiceRecord.self])
+        .modelContainer(for: [Vehicle.self, ServiceProvider.self, ServiceItem.self, ServiceRecord.self])
         
     }
 }
