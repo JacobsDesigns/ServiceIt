@@ -11,7 +11,7 @@ import Charts
 struct ServiceScheduleView: View {
     @Query var allRecords: [ServiceRecord]
     @Query var allVehicles: [Vehicle]
-    @Query var allServiceTypes: [ServiceType]
+    @Query var allServiceTypes: [ServiceItem]
     
     @State private var selectedVehicle: Vehicle?
 

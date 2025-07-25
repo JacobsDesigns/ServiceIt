@@ -23,7 +23,7 @@ struct SettingsView: View {
 
     @Query(sort: \Vehicle.name) var vehicles: [Vehicle]
     @Query(sort: \ServiceProvider.name) var providers: [ServiceProvider]
-    @Query(sort: \ServiceType.name) var serviceTypes: [ServiceType]
+    @Query(sort: \ServiceItem.name) var serviceTypes: [ServiceItem]
     @Query var allRecords: [ServiceRecord]
 
     // Sheet & Alert State
@@ -40,9 +40,9 @@ struct SettingsView: View {
     @State private var showDeleteProviderWarning = false
     
     @State private var showingAddType = false
-    @State private var editingType: ServiceType?
-    @State private var typeToDelete: ServiceType?
-    @State private var confirmedTypeToDelete: ServiceType?
+    @State private var editingType: ServiceItem?
+    @State private var typeToDelete: ServiceItem?
+    @State private var confirmedTypeToDelete: ServiceItem?
     @State private var showDeleteTypeWarning = false
     
     // Import/Export State
@@ -133,7 +133,7 @@ struct SettingsView: View {
                     EditProviderFormView(provider: $0)
                 }
                 .sheet(isPresented: $showingAddType) {
-                    AddServiceTypeView()
+                    AddServiceItemView()
                 }
                 .sheet(item: $editingType) {
                     EditServiceTypeView(type: $0)
@@ -267,7 +267,7 @@ struct SettingsView: View {
     }
 
     var serviceTypesSection: some View {
-        Section("Service Types") {
+        Section("Service Items") {
             ForEach(serviceTypes) { type in
                 Button {
                     editingType = type
@@ -275,7 +275,7 @@ struct SettingsView: View {
                     HStack {
                         Text(type.name)
                         Spacer()
-                        Text("Interval: \(type.suggestedMileage ?? 0)")
+                        Text("Interval: \(type.cost)")
                             .font(.footnote)
                             .foregroundColor(.secondary)
                     }
@@ -289,7 +289,7 @@ struct SettingsView: View {
                 }
             }
 
-            Button("Add Service Type") {
+            Button("Add Service Item") {
                 showingAddType = true
             }
             .buttonStyle(.borderedProminent)
@@ -356,43 +356,6 @@ struct SettingsView: View {
         }
     }
 
-//    private func exportCSV() {
-//        
-//        let imageDirectory = URL.documentsDirectory.appendingPathComponent("ExportedImages")
-//        try? FileManager.default.createDirectory(at: imageDirectory, withIntermediateDirectories: true)
-//        
-//
-//        if !FileManager.default.fileExists(atPath: imageDirectory.path) {
-//            try? FileManager.default.createDirectory(at: imageDirectory, withIntermediateDirectories: true)
-//        }
-//
-//        var filesToZip: [URL] = []
-//        
-//        let csv = generateCSV(from: allRecords, imageDirectory: imageDirectory)
-//        let filename = "service_export.csv"
-//        let csvURL = URL.documentsDirectory.appendingPathComponent(filename)
-//        filesToZip.append(csvURL)
-//        //print("Final csv output: \n\(csv)")
-//        //print("CSV will be saved to: \(csvURL)")
-//        if let imageFiles = try? FileManager.default.contentsOfDirectory(at: imageDirectory, includingPropertiesForKeys: nil){
-//            filesToZip.append(contentsOf: imageFiles)}
-//        let zipURL = URL.documentsDirectory.appendingPathComponent("service_export.zip")
-//        
-//        do {
-//            try csv.write(to: csvURL, atomically: true, encoding: .utf8)
-//
-//            if FileManager.default.fileExists(atPath: csvURL.path) {
-//                exportedFile = ExportedFile(url: csvURL)
-//            } else {
-//                print("⚠️ File not found after write: \(csvURL)")
-//            }
-//
-//        } catch {
-//            print("❌ Failed to write CSV: \(error)")
-//        }
-//
-//    }
-
     private func generateCSV(from records: [ServiceRecord], imageDirectory: URL) -> String {
         print("total records received: \(records.count)")
         
@@ -406,8 +369,8 @@ struct SettingsView: View {
             
             guard let vehicle = record.vehicle,
                   let provider = record.provider,
-                  let type = record.type,
-                  isValid(vehicle), isValid(provider), isValid(type) else {
+                  !record.items.isEmpty,
+                  isValid(vehicle), isValid(provider) else {
                 print("⚠️ Skipping invalid record: \(record)")
                 continue
             }
@@ -415,14 +378,14 @@ struct SettingsView: View {
             let date = formatter.string(from: record.date)
             let mileage = "\(record.mileage)"
             let cost = String(format: "%.2f", record.cost)
-            let typeName = type.name
+            let typeNames = record.items.map { $0.name }.joined(separator: ";")
             let providerName = provider.name
             let contactInfo = provider.contactInfo
             let vehicleName = vehicle.name
             let year = "\(vehicle.modelYear)"
             let vin = vehicle.vin
             let license = vehicle.license
-            let suggestedMilage = type.suggestedMileage ?? 0
+            let suggestedMilage = record.items.map {String($0.cost)}.joined(separator: ";")
 
             var imageFilename: String = ""
 
@@ -442,7 +405,7 @@ struct SettingsView: View {
                 }
             }
 
-            lines.append("\(date),\(mileage),\(cost),\(typeName),\(providerName),\(contactInfo),\(vehicleName),\(year),\(vin),\(license),\(suggestedMilage),\(imageFilename)")
+            lines.append("\(date),\(mileage),\(cost),\(typeNames),\(providerName),\(contactInfo),\(vehicleName),\(year),\(vin),\(license),\(suggestedMilage),\(imageFilename)")
             
             print ("appended line for \(vehicle.name)")
         }
@@ -461,15 +424,17 @@ struct SettingsView: View {
     }
 
     
-    private func isServiceTypeInUse(_ serviceType: ServiceType) -> Bool {
+    private func isServiceTypeInUse(_ serviceType: ServiceItem) -> Bool {
         let typeID = serviceType.persistentModelID
+
         let descriptor = FetchDescriptor<ServiceRecord>(
-            predicate: #Predicate<ServiceRecord>{
-                $0.type?.persistentModelID == typeID
+            predicate: #Predicate<ServiceRecord> {
+                $0.items.contains(where: { $0.persistentModelID == typeID })
             }
         )
         return (try? modelContext.fetch(descriptor))?.isEmpty == false
     }
+
 
     private func isServiceProviderInUse(_ provider: ServiceProvider) -> Bool {
         let providerID = provider.persistentModelID
@@ -492,11 +457,11 @@ struct SettingsView: View {
     }
     
     
-    private func handleServiceTypeDeleteRequest(_ type: ServiceType) {
+    private func handleServiceTypeDeleteRequest(_ type: ServiceItem) {
         let typeID = type.persistentModelID
         let descriptor = FetchDescriptor<ServiceRecord>(
-            predicate: #Predicate {
-                $0.type?.persistentModelID == typeID
+            predicate: #Predicate<ServiceRecord> {
+                $0.items.contains(where: { $0.persistentModelID == typeID })
             }
         )
         if let linkedRecords = try? modelContext.fetch(descriptor), !linkedRecords.isEmpty {
@@ -506,6 +471,7 @@ struct SettingsView: View {
             confirmedTypeToDelete = type
         }
     }
+
     
     private func handleProviderDeleteRequest(_ provider: ServiceProvider) {
         let providerID = provider.persistentModelID
@@ -540,21 +506,22 @@ struct SettingsView: View {
     }
 
     
-    private func unlinkServiceType(from type: ServiceType) {
+    private func unlinkServiceType(from type: ServiceItem) {
         let typeID = type.persistentModelID
 
         let descriptor = FetchDescriptor<ServiceRecord>(
-            predicate: #Predicate {
-                $0.type?.persistentModelID == typeID
+            predicate: #Predicate<ServiceRecord> {
+                $0.items.contains(where: { $0.persistentModelID == typeID })
             }
         )
 
         if let records = try? modelContext.fetch(descriptor) {
             for record in records {
-                record.type = nil
+                record.items.removeAll(where: { $0.persistentModelID == typeID })
             }
         }
     }
+
 
     private func unlinkServiceProvider(from provider: ServiceProvider) {
         let providerID = provider.persistentModelID
@@ -592,6 +559,7 @@ struct SettingsView: View {
 
 
 
+
     private func confirmAndImport(from url: URL) {
         let alert = buildImportConfirmationAlert(for: url)
         
@@ -604,34 +572,28 @@ struct SettingsView: View {
     private func buildImportConfirmationAlert(for url: URL) -> UIAlertController {
         let alert = UIAlertController(
             title: "Replace Existing Records?",
-            message: "This will delete all current service records before importing. Continue?",
+            message: "This will delete all current service records only if the import succeeds. Continue?",
             preferredStyle: .alert
         )
 
         let importAction = UIAlertAction(title: "Import", style: .destructive) { _ in
-            if url.startAccessingSecurityScopedResource() {
-                defer { url.stopAccessingSecurityScopedResource() }
-
-                // ✅ Readability test before delete
-                guard let _ = try? String(contentsOf: url, encoding: .utf8) else {
-                    print("❌ Unable to read file before deletion")
-                    showImportFailurePopup()
-                    return
-                }
-
-                // 🔥 Delete existing records first
-                deleteExistingServiceRecords()
-
-                // 📥 Then import new ones
-                importServiceRecords(from: url) { success in
-                    if !success {
-                        print("⚠️ Import failed after deletion")
-                        showImportFailurePopup()
-                    }
-                }
-            } else {
+            guard url.startAccessingSecurityScopedResource() else {
                 print("❌ Failed to access security scoped resource")
                 showImportFailurePopup()
+                return
+            }
+
+            defer { url.stopAccessingSecurityScopedResource() }
+
+            // ✅ Try importing first (no deletion yet)
+            importServiceRecords(from: url) { success in
+                if success {
+                    print("✅ Safe to delete old records after confirmed import")
+                    //deleteExistingServiceRecords()
+                } else {
+                    print("⚠️ Import failed — existing records preserved")
+                    showImportFailurePopup()
+                }
             }
         }
 
@@ -639,8 +601,6 @@ struct SettingsView: View {
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         return alert
     }
-
-
 
     private func showImportFailurePopup() {
         let alert = UIAlertController(
@@ -660,7 +620,7 @@ struct SettingsView: View {
         let recordDescriptor = FetchDescriptor<ServiceRecord>()
         let vehicleDescriptor = FetchDescriptor<Vehicle>()
         let providerDescriptor = FetchDescriptor<ServiceProvider>()
-        let typeDescriptor = FetchDescriptor<ServiceType>()
+        let typeDescriptor = FetchDescriptor<ServiceItem>()
 
         do {
             let records = try modelContext.fetch(recordDescriptor)
@@ -728,14 +688,27 @@ struct SettingsView: View {
             }
 
             if photoData == nil {
-                guard let iCloudURL = FileManager.default.url(forUbiquityContainerIdentifier: "iCloud.com.jacob.ServiceIt")?
-                    .appendingPathComponent("Documents/ExportedImages") else {
-                    print("❌ iCloud container not available")
-                    return
+                if let iCloudURL = FileManager.default.url(forUbiquityContainerIdentifier: "iCloud.com.jacob.ServiceIt")?
+                    .appendingPathComponent("Documents/ExportedImages") {
+                    let iCloudImageURL = iCloudURL.appendingPathComponent(imageFilename)
+                    photoData = try? Data(contentsOf: iCloudImageURL)
+                    if photoData == nil {
+                        print("⚠️ Image not found in iCloud either: \(imageFilename)")
+                    }
+                } else {
+                    print("⚠️ iCloud container not available — skipping image: \(imageFilename)")
                 }
-                let imageURL = iCloudURL.appendingPathComponent(imageFilename)
-                photoData = try? Data(contentsOf: imageURL)
             }
+
+//            if photoData == nil {
+//                guard let iCloudURL = FileManager.default.url(forUbiquityContainerIdentifier: "iCloud.com.jacob.ServiceIt")?
+//                    .appendingPathComponent("Documents/ExportedImages") else {
+//                    print("❌ iCloud container not available")
+//                    return
+//                }
+//                let imageURL = iCloudURL.appendingPathComponent(imageFilename)
+//                photoData = try? Data(contentsOf: imageURL)
+//            }
             
 
             // 🚗 Vehicle matching or creation
@@ -758,21 +731,21 @@ struct SettingsView: View {
             // 🔧 ServiceType matching or creation
             let type = fetchExistingServiceType(name: typeName)
                 ?? {
-                    let newType = ServiceType(name: typeName, suggestedMileage: suggestedMileage)
+                    let newType = ServiceItem(name: typeName, cost: Double(suggestedMileage))
                     modelContext.insert(newType)
                     return newType
                 }()
 
             // 📝 Final Record
-            let record = ServiceRecord(
-                vehicle: vehicle,
-                type: type,
-                cost: cost,
-                date: date,
-                mileage: mileage
-            )
-            record.provider = provider
-            modelContext.insert(record)
+//            let record = ServiceRecord(
+//                vehicle: vehicle,
+//                type: type,
+//                cost: cost,
+//                date: date,
+//                mileage: mileage
+//            )
+//            record.provider = provider
+//            modelContext.insert(record)
         }
 
         do {
@@ -808,10 +781,10 @@ struct SettingsView: View {
         return try? modelContext.fetch(descriptor).first
     }
 
-    private func fetchExistingServiceType(name rawName: String) -> ServiceType? {
+    private func fetchExistingServiceType(name rawName: String) -> ServiceItem? {
         let normalizedName = rawName.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        let descriptor = FetchDescriptor<ServiceType>(
+        let descriptor = FetchDescriptor<ServiceItem>(
             predicate: #Predicate { type in
                 type.name == normalizedName
             }
@@ -854,7 +827,7 @@ extension View {
 
 
 
-#Preview {
-    SettingsView()
-        .modelContainer(PreviewContainer.shared)
-}
+//#Preview {
+//    SettingsView()
+//        .modelContainer(PreviewContainer.shared)
+//}

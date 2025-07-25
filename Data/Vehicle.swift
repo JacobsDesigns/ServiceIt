@@ -7,9 +7,9 @@
 import SwiftData
 import Foundation
 
-
 @Model
 class Vehicle {
+    
     var id = UUID()
     var name: String
     var modelYear: Int
@@ -18,7 +18,7 @@ class Vehicle {
     var currentMileage: Int // 🔗 Linkable field
     var photoData: Data?
 
-    @Relationship var serviceRecords: [ServiceRecord] = []
+    @Relationship var serviceVisits: [ServiceVisit] = []
 
     init(name: String, modelYear: Int, vin: String, license: String, currentMileage: Int, photoData: Data? = nil) {
         self.name = name

@@ -8,12 +8,12 @@ import SwiftData
 
 
 @Model
-class ServiceType {
+class ServiceItem {
     var name: String
-    var suggestedMileage: Int?
+    var cost: Double
 
-    init(name: String, suggestedMileage: Int? = nil) {
+    init(name: String, cost: Double) {
         self.name = name
-        self.suggestedMileage = suggestedMileage
+        self.cost = cost
     }
 }

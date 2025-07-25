@@ -51,7 +51,7 @@ struct VehicleSummaryCard: View {
 }
 
 #Preview {
-    VehicleSummaryCard(vehicle: MockData.vehicle1)
+    VehicleSummaryCard(vehicle: MockData.allVehicles().first!)
         .modelContainer(PreviewContainer.shared)
         .padding()
 }

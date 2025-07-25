@@ -11,22 +11,22 @@ struct EditServiceTypeView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
 
-    @Bindable var type: ServiceType
-    @State private var mileageText: String = ""
+    @Bindable var type: ServiceItem
+    @State private var cost: String = ""
 
     var body: some View {
         NavigationStack {
             Form {
                 Section("Details") {
-                    TextField("Service Type Name", text: $type.name)
+                    TextField("Service Item Name", text: $type.name)
 
-                    TextField("Suggested Interval (mi)", text: $mileageText)
+                    TextField("Cost", text: $cost)
                         .keyboardType(.numberPad)
-                        .onChange(of: mileageText) {
-                            if let value = Int(mileageText) {
-                                type.suggestedMileage = value
+                        .onChange(of: cost) {
+                            if let value = Double(cost) {
+                                type.cost = value
                             } else {
-                                type.suggestedMileage = nil
+                                type.cost = 0
                             }
                         }
                 }
@@ -38,7 +38,7 @@ struct EditServiceTypeView: View {
                     }
                 }
             }
-            .navigationTitle("Edit Service Type")
+            .navigationTitle("Edit Service Item")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Cancel") { dismiss() }
@@ -51,7 +51,7 @@ struct EditServiceTypeView: View {
                 }
             }
             .onAppear {
-                mileageText = type.suggestedMileage.map(String.init) ?? ""
+                //cost = type.cost
             }
         }
     }
@@ -61,10 +61,12 @@ struct EditServiceTypeView: View {
     }
 }
 
-#Preview {
-    let container = PreviewContainer.shared
-    let mockType = MockData.allServiceTypes().first ?? ServiceType(name: "Oil Change", suggestedMileage: 5000)
-
-    return EditServiceTypeView(type: mockType)
-        .modelContainer(container)
-}
+//#Preview {
+//    let container = PreviewContainer.shared
+//    let context = container.context
+//    let mockType = ServiceItem(name: "Oil Change", cost: 50)
+//    context.insert(mockType)
+//
+//    EditServiceTypeView(type: mockType)
+//        .modelContainer(container)
+//}
