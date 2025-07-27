@@ -17,9 +17,9 @@ class ServiceVisit : Identifiable {
 
     @Relationship var vehicle: Vehicle?
     @Relationship var provider: ServiceProvider?
-    @Relationship var items: [ServiceItem] = []
+    @Relationship var savedItems: [SavedServiceItem] = []
 
-    init(date: Date, mileage: Int, cost: Double, notes: String? = nil, photoData: Data? = nil, vehicle: Vehicle? = nil, provider: ServiceProvider? = nil, items: [ServiceItem]) {
+    init(date: Date, mileage: Int, cost: Double, notes: String? = nil, photoData: Data? = nil, vehicle: Vehicle? = nil, provider: ServiceProvider? = nil, savedItems: [SavedServiceItem]) {
         self.date = date
         self.mileage = mileage
         self.cost = cost
@@ -27,7 +27,7 @@ class ServiceVisit : Identifiable {
         self.photoData = photoData
         self.vehicle = vehicle
         self.provider = provider
-        self.items = items
+        self.savedItems = savedItems
     }
 }
 

@@ -23,7 +23,7 @@ struct SettingsView: View {
 
     @Query(sort: \Vehicle.name) var vehicles: [Vehicle]
     @Query(sort: \ServiceProvider.name) var providers: [ServiceProvider]
-    @Query(sort: \ServiceItem.name) var serviceTypes: [ServiceItem]
+    @Query(sort: \ServiceItem.name) var serviceItems: [ServiceItem]
     @Query var allRecords: [ServiceRecord]
 
     // Sheet & Alert State
@@ -39,11 +39,11 @@ struct SettingsView: View {
     @State private var confirmedProviderToDelete: ServiceProvider?
     @State private var showDeleteProviderWarning = false
     
-    @State private var showingAddType = false
-    @State private var editingType: ServiceItem?
-    @State private var typeToDelete: ServiceItem?
-    @State private var confirmedTypeToDelete: ServiceItem?
-    @State private var showDeleteTypeWarning = false
+    @State private var showingAddItem = false
+    @State private var editingItem: ServiceItem?
+    @State private var itemToDelete: ServiceItem?
+    @State private var confirmedItemToDelete: ServiceItem?
+    @State private var showDeleteItemWarning = false
     
     // Import/Export State
     @State private var showImporter = false
@@ -57,7 +57,7 @@ struct SettingsView: View {
                 List {
                     vehiclesSection
                     providersSection
-                    serviceTypesSection
+                    serviceItemsSection
                     dataManagementSection
                 }
                 .navigationTitle("Settings")
@@ -81,20 +81,20 @@ struct SettingsView: View {
                     try? modelContext.save()
                 }
                 
-                .alert("Cannot Delete Service Type", isPresented: $showDeleteTypeWarning, presenting: typeToDelete) { type in
+                .alert("Cannot Delete Service Item", isPresented: $showDeleteItemWarning, presenting: itemToDelete) { type in
                     Button("Cancel", role: .cancel) {
-                        typeToDelete = nil
-                        confirmedTypeToDelete = nil
+                        itemToDelete = nil
+                        confirmedItemToDelete = nil
                     }
                     Button("Delete Anyway", role: .destructive) {
-                        confirmedTypeToDelete = type
-                        typeToDelete = nil
-                        showDeleteTypeWarning = false
+                        confirmedItemToDelete = type
+                        itemToDelete = nil
+                        showDeleteItemWarning = false
                     }
                 } message: { type in
-                    Text("This Service Type is still used by existing service records. Deleting it will remove the link.")
+                    Text("This Service Item is still used by existing service records. Deleting it will remove the link.")
                 }
-                .deleteAlert(object: $confirmedTypeToDelete, title: "Service Type") { type in
+                .deleteAlert(object: $confirmedItemToDelete, title: "Service Type") { type in
                     unlinkServiceType(from: type)
                     modelContext.delete(type)
                     try? modelContext.save()
@@ -132,11 +132,11 @@ struct SettingsView: View {
                 .sheet(item: $editingProvider) {
                     EditProviderFormView(provider: $0)
                 }
-                .sheet(isPresented: $showingAddType) {
+                .sheet(isPresented: $showingAddItem) {
                     AddServiceItemView()
                 }
-                .sheet(item: $editingType) {
-                    EditServiceTypeView(type: $0)
+                .sheet(item: $editingItem) {
+                    EditServiceTypeView(item: $0)
                 }
                 
                 .sheet(item: $exportedFile, onDismiss: {
@@ -266,23 +266,23 @@ struct SettingsView: View {
         }
     }
 
-    var serviceTypesSection: some View {
+    var serviceItemsSection: some View {
         Section("Service Items") {
-            ForEach(serviceTypes) { type in
+            ForEach(serviceItems) { item in
                 Button {
-                    editingType = type
+                    editingItem = item
                 } label: {
                     HStack {
-                        Text(type.name)
+                        Text(item.name)
                         Spacer()
-                        Text("Interval: \(type.cost)")
+                        Text("Cost: \(item.cost.formatted(.currency(code: "USD")))")
                             .font(.footnote)
                             .foregroundColor(.secondary)
                     }
                 }
                 .swipeActions {
                     Button(role: .destructive) {
-                        handleServiceTypeDeleteRequest(type)
+                        handleServiceTypeDeleteRequest(item)
                     } label: {
                         Label("Delete", systemImage: "trash")
                     }
@@ -290,7 +290,7 @@ struct SettingsView: View {
             }
 
             Button("Add Service Item") {
-                showingAddType = true
+                showingAddItem = true
             }
             .buttonStyle(.borderedProminent)
         }
@@ -465,10 +465,10 @@ struct SettingsView: View {
             }
         )
         if let linkedRecords = try? modelContext.fetch(descriptor), !linkedRecords.isEmpty {
-            typeToDelete = type
-            showDeleteTypeWarning = true
+            itemToDelete = type
+            showDeleteItemWarning = true
         } else {
-            confirmedTypeToDelete = type
+            confirmedItemToDelete = type
         }
     }
 
@@ -737,7 +737,7 @@ struct SettingsView: View {
                 }()
 
             // 📝 Final Record
-//            let record = ServiceRecord(
+//            let record = ServiceVisit(
 //                vehicle: vehicle,
 //                type: type,
 //                cost: cost,

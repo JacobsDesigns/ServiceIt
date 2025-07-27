@@ -11,22 +11,22 @@ struct EditServiceTypeView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
 
-    @Bindable var type: ServiceItem
+    @Bindable var item: ServiceItem
     @State private var cost: String = ""
 
     var body: some View {
         NavigationStack {
             Form {
                 Section("Details") {
-                    TextField("Service Item Name", text: $type.name)
+                    TextField("Service Item Name", text: $item.name)
 
                     TextField("Cost", text: $cost)
                         .keyboardType(.numberPad)
                         .onChange(of: cost) {
                             if let value = Double(cost) {
-                                type.cost = value
+                                item.cost = value
                             } else {
-                                type.cost = 0
+                                item.cost = 0
                             }
                         }
                 }
@@ -40,7 +40,7 @@ struct EditServiceTypeView: View {
             }
             .navigationTitle("Edit Service Item")
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
                 ToolbarItemGroup(placement: .keyboard) {
@@ -51,7 +51,7 @@ struct EditServiceTypeView: View {
                 }
             }
             .onAppear {
-                //cost = type.cost
+                cost = String(item.cost)
             }
         }
     }
