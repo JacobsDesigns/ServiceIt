@@ -31,13 +31,25 @@ enum MockData {
             ServiceItem(name: "Brake Inspection", cost: 0.0)
         ]
     }
+    
+    static func mockSavedItems() -> [SavedServiceItem] {
+        [
+            SavedServiceItem(name: "Oil Change", cost: 49.99),
+            SavedServiceItem(name: "Air Filter Replacement", cost: 29.99),
+            SavedServiceItem(name: "Brake Inspection", cost: 0)
+            ]
+    }
 
     static func generateVisits(for vehicle: Vehicle, provider: ServiceProvider, count: Int) -> [ServiceVisit] {
         (1...count).map { i in
-            let items = mockItems().shuffled().prefix(Int.random(in: 1...3))
+            let serviceItems = mockItems().shuffled().prefix(Int.random(in: 1...3))
+            let savedItems = serviceItems.map { item in
+                SavedServiceItem(name: item.name, cost: item.cost)
+            }
+
             let mileage = vehicle.currentMileage + Int.random(in: 500...(1500 * i))
-            let date = Date.now//.addingTimeInterval(TimeInterval(-86400 * i))
-            let totalCost = items.reduce(0.0) { $0 + $1.cost }
+            let date = Date.now
+            let totalCost = savedItems.reduce(0.0) { $0 + $1.cost }
 
             return ServiceVisit(
                 date: date,
@@ -47,10 +59,11 @@ enum MockData {
                 photoData: nil,
                 vehicle: vehicle,
                 provider: provider,
-                items: Array(items)
+                savedItems: Array(savedItems)
             )
         }
     }
+
 }
 
 //import Foundation
