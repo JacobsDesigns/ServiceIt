@@ -13,7 +13,8 @@ struct AddServiceItemView: View {
     
     @State private var newServiceName = ""
     @State private var newItemCost = ""
-
+    @FocusState private var isCostFieldFocused: Bool
+    
     var body: some View {
         NavigationStack{
             Form {
@@ -21,6 +22,15 @@ struct AddServiceItemView: View {
                     TextField("Service Item", text: $newServiceName)
                     TextField("Cost", text: $newItemCost)
                         .keyboardType(.decimalPad)
+                        .focused($isCostFieldFocused)
+                        .toolbar {
+                            ToolbarItemGroup(placement: .keyboard) {
+                                Spacer()
+                                Button("Done") {
+                                    isCostFieldFocused = false // Dismisses the keyboard
+                                }
+                            }
+                        }
                 }
                 
                 Section {

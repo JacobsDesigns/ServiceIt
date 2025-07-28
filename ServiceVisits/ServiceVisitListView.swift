@@ -35,16 +35,18 @@ struct ServiceVisitListView: View {
                                     }
                                 }
 
-                                Spacer()
-
-                                Text(visit.provider?.name ?? "Unknown Provider")
-                                    .font(.footnote)
-                                    .italic()
-                                    .foregroundColor(.secondary)
+                               
                             }
 
                             Text("Cost: \(visit.cost, format: .currency(code: "USD"))")
+                                .foregroundColor(.green)
+                            //Spacer()
 
+                            Text(visit.provider?.name ?? "Unknown Provider")
+                                .font(.footnote)
+                                .italic()
+                                .foregroundColor(.secondary)
+                            
                             HStack {
                                 Text(visit.date.formatted(date: .abbreviated, time: .omitted))
                                 Spacer()

@@ -32,38 +32,167 @@ struct ServiceVisitFormView: View {
     @State private var newServiceName: String = ""
     @State private var newItemCost: String = ""
     @State private var showAddItemSheet = false
+    @State private var showAddProviderSheet = false
 
     @State private var selectedItemToAdd: ServiceItem? = nil
     @State private var costInput: String = ""
     @State private var addedItems: [SavedServiceItem] = []
     @State private var settingItem = false
-    @State private var pendingItem: ServiceItem?
-
+    @State private var pendingItem: ServiceItem? = nil
+    @State private var isShowingSheet = false
+    @State private var isShowingEditSheet = false
+    @State private var itemToEdit: SavedServiceItem? = nil
+    
+    //@State private var stagedItem: SavedServiceItem? = nil
 
     var body: some View {
         NavigationStack {
             Form {
                 // 🚗 Vehicle Picker
                 vehiclePickerSection
-
+                
                 // 🛠 Service Provider
                 providerPickerSection
-
+                
                 // 🔧 Multi-Select Service Types
-                serviceItemSection
-
+                //serviceItemSection
+                //begin
+                Section() {
+                    
+                    Button("Add Service Item") {
+                        isShowingSheet = true
+                    }
+                    .sheet(isPresented: $isShowingSheet) {
+                        ItemPickerSheet(
+                            serviceItems: serviceItems,
+                            selectedItem: $selectedItemToAdd,
+                            costInput: $costInput,
+                            addedItems: $addedItems,
+                            visitToEdit: visitToEdit,
+                            isPresented: $isShowingSheet
+                        )
+                    }
+                    
+                    
+                    
+                    //                    Picker("", selection: $selectedItemToAdd){
+                    //                        Text("Service Items").tag(nil as ServiceItem?)
+                    //                        ForEach(serviceItems){ item in
+                    //                            Text("\(item.name) • \(item.cost, format: .currency(code: "USD"))").tag(Optional(item))
+                    //                        }
+                    //                    }
+                    //                    .pickerStyle(.menu)
+                    //                    .onChange(of: selectedItemToAdd) { _, newValue in
+                    //                    guard let item = newValue else { return }
+                    //                    let alreadyAdded = addedItems.contains { $0.name == item.name }
+                    //                    guard !alreadyAdded else { return }
+                    //
+                    //                    pendingItem = item
+                    //                    costInput = String(format: "%.2f", item.cost)
+                    //                    settingItem = true
+                    //                }
+                    
+                    // Inline cost entry if a pending item is selected
+                    //                    if let item = pendingItem {
+                    //
+                    //                        VStack(alignment: .leading, spacing: 10) {
+                    //                            Text("Enter cost for \(item.name):")
+                    //
+                    //                            TextField("Cost", text: $costInput)
+                    //                                .keyboardType(.decimalPad)
+                    //                                .textFieldStyle(.roundedBorder)
+                    //                                .onChange(of: costInput) { _, newValue in
+                    //                                    if let newCost = Double(newValue), newCost >= 0 {
+                    //                                        print("Valid cost Input: \(newCost)")
+                    //                                        pendingItem!.cost = newCost
+                    //                                    }
+                    //                                }
+                    //
+                    //                            HStack {
+                    //                                Button("Cancel") {
+                    //                                    pendingItem = nil
+                    //                                    selectedItemToAdd = nil
+                    //                                    costInput = ""
+                    //                                }
+                    //
+                    //                                Spacer()
+                    //
+                    //                                Button()
+                    //                                {
+                    //                                    let cost = Double(costInput) ?? item.cost
+                    //                                    if let visit = visitToEdit {
+                    //                                        let newItem = SavedServiceItem(name: item.name, cost: cost)
+                    //                                        newItem.visit = visit
+                    //                                        addedItems.append(newItem)
+                    //
+                    //                                    } else {
+                    //                                        let stagedItem = SavedServiceItem(name: item.name, cost: cost)
+                    //                                        addedItems.append(stagedItem)
+                    //                                    }
+                    //
+                    //                                    pendingItem = nil
+                    //                                    selectedItemToAdd = nil
+                    //                                    costInput = ""
+                    //                                } label: {
+                    //                                    Label("Add Item", systemImage: "plus")
+                    //                                }
+                    //                            }
+                    //                        }
+                    //                        .padding(.vertical, 8)
+                    //                    }
+                    
+                    
+                    // List of added items
+                    //                    ForEach(addedItems) { item in
+                    //                        HStack {
+                    //                            Text(item.name)
+                    //                            Spacer()
+                    //                            Text(item.cost, format: .currency(code: "USD"))
+                    //                                .foregroundStyle(.secondary)
+                    //                        }
+                    //                    }
+                    ForEach(addedItems.indices, id: \.self) { index in
+                        let item = addedItems[index]
+                        Button {
+                            itemToEdit = item
+                            isShowingEditSheet = true
+                        } label: {
+                            Text("\(item.name) - $\(item.cost, specifier: "%.2f")")
+                        }
+                    }
+                    .onDelete { indexSet in
+                        addedItems.remove(atOffsets: indexSet)
+                    }
+                    .onChange (of: addedItems) { _, newValue in
+                        let totalCosts = newValue.reduce(0.0) { $0 + $1.cost}
+                        costText = totalCosts.formatted(.currency(code: "USD"))
+                    }
+                    
+                    // Subtotal
+                    HStack {
+                        Text("Subtotal")
+                            .bold()
+                        Spacer()
+                        Text(addedItems.reduce(0.0) { $0 + $1.cost }, format: .currency(code: "USD"))
+                            .bold()
+                            .foregroundStyle(.primary)
+                    }
+                }
+                
+                //ending
+                
                 // 💵 Cost / Mileage / Date
                 visitDetailsSection
-
+                
                 // 📝 Notes
                 Section(header: Text("Notes")) {
                     TextEditor(text: $notes)
                         .frame(minHeight: 100)
                 }
-
+                
                 // 🚗 Vehicle Photo
                 vehiclePhotoSection
-
+                
                 // 📷 Image Picker
                 Section {
                     Button("Attach Photo") {
@@ -76,30 +205,34 @@ struct ServiceVisitFormView: View {
                             .frame(height: 180)
                     }
                 }
-
+                
                 // ✅ Save / Delete
                 Section {
-                    Button(visitToEdit == nil ? "Add Visit" : "Save Changes") {
-                        saveVisit()
-                        dismiss()
-                    }
-                    .disabled(
-                        selectedVehicle == nil ||
-                        selectedProvider == nil //||
-                        //selectedServiceItems.isEmpty //||
-                        //Double(costText) == nil ||
-                        //Int(mileage) == nil
-                    )
-
+                    //                    Button(visitToEdit == nil ? "Add Visit" : "Save Changes") {
+                    //                        saveVisit()
+                    //                        dismiss()
+                    //                    }
+                    //                    .disabled(
+                    //                        selectedVehicle == nil ||
+                    //                        selectedProvider == nil //||
+                    //                        //selectedServiceItems.isEmpty //||
+                    //                        //Double(costText) == nil ||
+                    //                        //Int(mileage) == nil
+                    //                    )
+                    
                     if visitToEdit != nil {
                         Button("Delete Visit", role: .destructive) {
                             showDeleteAlert = true
                         }
                     }
                 }
+                
                 Section {
                     Button("Add Item"){
                         showAddItemSheet = true
+                    }
+                    Button("Add Provider"){
+                        showAddProviderSheet = true
                     }
                 }
             }
@@ -108,9 +241,15 @@ struct ServiceVisitFormView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Cancel") { dismiss() }
                 }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(visitToEdit == nil ? "Add Visit" : "Save Changes") { saveVisit() }
+                        .disabled(
+                            selectedVehicle == nil ||
+                            selectedProvider == nil ||
+                            cleanedCostText(mileage) == nil)
+                }
             }
             .onAppear(perform: loadVisitIfEditing)
-            
             .sheet(isPresented: $showImagePicker) {
                 ImagePicker(selectedImage: $image)
             }
@@ -118,6 +257,26 @@ struct ServiceVisitFormView: View {
             .sheet(isPresented: $showAddItemSheet) {
                 AddServiceItemView()
             }
+            .sheet(isPresented: $showAddProviderSheet){
+                AddProviderView()
+            }
+            .sheet(item: $itemToEdit) { item in
+                EditItemSheet(
+                    item: item,
+                    onSave: { updatedItem in
+                        if let index = addedItems.firstIndex(where: { $0.id == updatedItem.id }) {
+                            addedItems[index] = updatedItem
+                        }
+                        itemToEdit = nil
+                    },
+                    onCancel: {
+                        itemToEdit = nil
+                    }
+                )
+            }
+
+        
+
             .alert("Delete Visit?", isPresented: $showDeleteAlert) {
                 Button("Delete", role: .destructive) { deleteVisit(); dismiss() }
                 Button("Cancel", role: .cancel) {}
@@ -126,14 +285,22 @@ struct ServiceVisitFormView: View {
             }
         }
     }
-
-
+    
     var visitDetailsSection : some View {
         Section(header: Text("Visit Details")) {
             TextField("Cost", text: $costText)
                 .keyboardType(.decimalPad)
-            TextField("Mileage", text: $mileage)
-                .keyboardType(.numberPad)
+            
+            HStack {
+                TextField("Mileage", text: $mileage)
+                    .keyboardType(.numberPad)
+                Button("Use Current Mileage"){
+                    if let mileage = selectedVehicle?.currentMileage {
+                        self.mileage = formatMileage(mileage)
+                    }
+                }
+            }
+            
             DatePicker("Date", selection: $date, displayedComponents: .date)
         }
     }
@@ -154,7 +321,7 @@ struct ServiceVisitFormView: View {
     }
     
     var vehiclePickerSection: some View {
-        Section(header: Text("Vehicle")) {
+        Section() {
             Picker("Vehicle", selection: $selectedVehicle) {
                 ForEach(allVehicles, id: \.self) { vehicle in
                     Text(vehicle.modelYear.description + " " + vehicle.name).tag(vehicle as Vehicle)
@@ -164,7 +331,7 @@ struct ServiceVisitFormView: View {
     }
     
     var providerPickerSection: some View {
-        Section(header: Text("Provider")) {
+        Section() {
             Picker("Provider", selection: $selectedProvider) {
                 Text("Select Provider").tag(nil as ServiceProvider?)
                 ForEach(serviceProviders) { provider in
@@ -174,124 +341,125 @@ struct ServiceVisitFormView: View {
         }
     }
     
-    
-    var serviceItemSection: some View {
-        Section(header: Text("Service Items")) {
-
-            Picker("Select an Item", selection: $selectedItemToAdd){
-                Text("Select an Item").tag(nil as ServiceItem?)
-                ForEach(serviceItems){ item in
-                    Text("\(item.name) • \(item.cost, format: .currency(code: "USD"))").tag(Optional(item))
-                }
-            }
-            .pickerStyle(.menu)
-            .onChange(of: selectedItemToAdd) { _, newValue in
-                print("Picker changed to: ", newValue?.name ?? "nil")
-            guard let item = newValue else { return }
-            let alreadyAdded = addedItems.contains { $0.name == item.name }
-            guard !alreadyAdded else { return }
-
-            pendingItem = item
-            costInput = String(format: "%.2f", item.cost)
-            settingItem = true
-            print(item.name)
-            print(item.cost)
-        }
-
-            // Inline cost entry if a pending item is selected
-            if let item = pendingItem {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Enter cost for \(item.name):")
-
-                    TextField("Cost", text: $costInput)
-                        .keyboardType(.decimalPad)
-                        .textFieldStyle(.roundedBorder)
-                        .onChange(of: costInput) { _, newValue in
-                            if let newCost = Double(newValue), newCost >= 0 {
-                                print("Valid cost Input: \(newCost)")
-                                
-                            }
-//                            let p_item = pendingItem {
-//                                p_item.cost = newCost
+//    @ViewBuilder
+//    func serviceItemSection() -> some View {
+//        Section(header: Text("Service Items")) {
+//
+//            Picker("Select an Item", selection: $selectedItemToAdd){
+//                Text("Select an Item").tag(nil as ServiceItem?)
+//                ForEach(serviceItems){ item in
+//                    Text("\(item.name) • \(item.cost, format: .currency(code: "USD"))").tag(Optional(item))
+//                }
+//            }
+//            .pickerStyle(.menu)
+//            .onChange(of: selectedItemToAdd) { _, newValue in
+//                print("Picker changed to: ", newValue?.name ?? "nil")
+//            guard let item = newValue else { return }
+//            let alreadyAdded = addedItems.contains { $0.name == item.name }
+//            guard !alreadyAdded else { return }
+//                
+//            let temp = SavedServiceItem(name: item.name, cost: item.cost)
+//            stagedItem = temp
+//                
+//            pendingItem = item
+//            costInput = String(format: "%.2f", item.cost)
+//            settingItem = true
+//            print(item.name)
+//            print(item.cost)
+//        }
+//            
+//            // Inline cost entry if a pending item is selected
+//            if let item = pendingItem {
+//                
+//                VStack(alignment: .leading, spacing: 10) {
+//                    Text("Enter cost for \(item.name):")
+//
+//                    TextField("Cost", text: $costInput)
+//                        .keyboardType(.decimalPad)
+//                        .textFieldStyle(.roundedBorder)
+//                        .onChange(of: costInput) { _, newValue in
+//                            if let newCost = Double(newValue), newCost >= 0 {
+//                                print("Valid cost Input: \(newCost)")
+//                                stagedItem!.cost = newCost
 //                            }
-                        }
-
-                    HStack {
-                        Button("Cancel") {
-                            pendingItem = nil
-                            selectedItemToAdd = nil
-                            costInput = ""
-                        }
-
-                        Spacer()
-
-                        Button("Add Item") {
-                            
-//                            guard let item = pendingItem else { return }
-//                            guard let cost = Double(costInput) else { return }
-                            
-                            let cost = Double(costInput) ?? item.cost
-
-                            if let visit = visitToEdit {
-                                print("visitToEdit is set: \(visit.date)")
-                                
-                                let newItem = SavedServiceItem(name: item.name, cost: cost)
-                                newItem.visit = visit
-                                modelContext.insert(newItem)
-
-                                do {
-                                    try modelContext.save()
-                                    print("✅ Save succeeded")
-                                } catch {
-                                    print("🛑 Save failed: \(error)")
-                                }
-
-                                addedItems.append(newItem)
-                                
-                            } else {
-                                print("visitToEdit is nil — staging item")
-                                let stagedItem = SavedServiceItem(name: item.name, cost: cost)
-                                addedItems.append(stagedItem)
-                            }
-
-                            pendingItem = nil
-                            selectedItemToAdd = nil
-                            costInput = ""
-                        }
-                    }
-                }
-                .padding(.vertical, 8)
-            }
-
-
-            // List of added items
-            ForEach(addedItems) { item in
-                HStack {
-                    Text(item.name)
-                    Spacer()
-                    Text(item.cost, format: .currency(code: "USD"))
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .onDelete { indexSet in
-                addedItems.remove(atOffsets: indexSet)
-            }
-            .onChange (of: addedItems) { _, newValue in
-                let totalCosts = newValue.reduce(0.0) { $0 + $1.cost}
-                    costText = totalCosts.formatted(.currency(code: "USD"))
-            }
-
-            // Subtotal
-            HStack {
-                Text("Subtotal")
-                    .bold()
-                Spacer()
-                Text(addedItems.reduce(0.0) { $0 + $1.cost }, format: .currency(code: "USD"))
-                    .bold()
-                    .foregroundStyle(.primary)
-            }
-        }
-    }
+//                        }
+//
+//                    HStack {
+//                        Button("Cancel") {
+//                            pendingItem = nil
+//                            selectedItemToAdd = nil
+//                            stagedItem = nil
+//                            costInput = ""
+//                        }
+//
+//                        Spacer()
+//
+//                        Button("Add Item") {
+//                            
+//                            print("\(stagedItem?.name ?? "No item")")
+//                            
+//                            let cost = Double(costInput) ?? item.cost
+//
+//                            if let visit = visitToEdit {
+//                                print("visitToEdit is set: \(visit.date)")
+//                                
+//                                let newItem = SavedServiceItem(name: item.name, cost: cost)
+//                                newItem.visit = visit
+//                                modelContext.insert(newItem)
+//
+//                                do {
+//                                    try modelContext.save()
+//                                    print("✅ Save succeeded")
+//                                } catch {
+//                                    print("🛑 Save failed: \(error)")
+//                                }
+//
+//                                addedItems.append(newItem)
+//                                
+//                            } else {
+//                                print("visitToEdit is nil — staging item")
+//                                let stagedItem = SavedServiceItem(name: item.name, cost: cost)
+//                                addedItems.append(stagedItem)
+//                            }
+//
+//                            pendingItem = nil
+//                            selectedItemToAdd = nil
+//                            costInput = ""
+//                        }
+//                    }
+//                }
+//                .padding(.vertical, 8)
+//            }
+//
+//
+//            // List of added items
+//            ForEach(addedItems) { item in
+//                HStack {
+//                    Text(item.name)
+//                    Spacer()
+//                    Text(item.cost, format: .currency(code: "USD"))
+//                        .foregroundStyle(.secondary)
+//                }
+//            }
+//            .onDelete { indexSet in
+//                addedItems.remove(atOffsets: indexSet)
+//            }
+//            .onChange (of: addedItems) { _, newValue in
+//                let totalCosts = newValue.reduce(0.0) { $0 + $1.cost}
+//                    costText = totalCosts.formatted(.currency(code: "USD"))
+//            }
+//
+//            // Subtotal
+//            HStack {
+//                Text("Subtotal")
+//                    .bold()
+//                Spacer()
+//                Text(addedItems.reduce(0.0) { $0 + $1.cost }, format: .currency(code: "USD"))
+//                    .bold()
+//                    .foregroundStyle(.primary)
+//            }
+//        }
+//    }
     
     // MARK: - Actions
 
@@ -306,18 +474,37 @@ struct ServiceVisitFormView: View {
         selectedServiceItems = Set(visit.savedItems)
         addedItems = visit.savedItems.sorted { $0.name < $1.name }
         costText = "\(visit.cost)"
-        mileage = "\(visit.mileage)"
+        mileage = formatMileage(visit.mileage)//"\(visit.mileage)"
         notes = visit.notes ?? ""
         image = visit.photoData.flatMap(UIImage.init(data:))
         date = visit.date
     }
 
+    func cleanedCostText(_ cost: String) -> Int? {
+        let output = cost
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+        .replacingOccurrences(of: "$", with: "")
+        .replacingOccurrences(of: ",", with: "")
+        return Int(output)
+    }
+    
     private func saveVisit() {
+        
+        let cleanedCostText = costText
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "$", with: "")
+            .replacingOccurrences(of: ",", with: "")
+        
+        let cleanedMileage = mileage
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: ",", with: "")
+            .replacingOccurrences(of: ".", with: "")
+        
         guard
             let vehicle = selectedVehicle,
             let provider = selectedProvider,
-            let cost = Double(costText),
-            let mileageValue = Int(mileage)
+            let cost = Double(cleanedCostText),
+            let mileageValue = Int(cleanedMileage)
         else {
             print("❌ Visit save failed: missing required fields")
             return
@@ -365,12 +552,18 @@ struct ServiceVisitFormView: View {
         }
     }
 
-
     private func deleteVisit() {
         guard let visit = visitToEdit else { return }
         modelContext.delete(visit)
         try? modelContext.save()
     }
+    
+    func formatMileage(_ mileage: Int) -> String {
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = .decimal
+        return numberFormatter.string(from: NSNumber(value: mileage)) ?? "\(mileage)"
+    }
+    
 }
 
 #Preview {
