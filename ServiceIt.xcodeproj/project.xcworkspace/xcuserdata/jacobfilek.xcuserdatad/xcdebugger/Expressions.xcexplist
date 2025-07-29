@@ -3,10 +3,13 @@
    version = "1.0">
    <ContextStates>
       <ContextState
-         contextName = "SettingsView.generateCSV(from:):SettingsView.swift">
+         contextName = "closure #3 in closure #1 in closure #1 in ServiceVisitFormView.body.getter:ServiceVisitFormView.swift">
          <PersistentStrings>
             <PersistentString
-               value = "type.name">
+               value = "costText">
+            </PersistentString>
+            <PersistentString
+               value = "Double(costText)">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
@@ -22,6 +25,26 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
+         contextName = "ServiceVisitFormView.loadVisitIfEditing():ServiceVisitFormView.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "savedItems">
+            </PersistentString>
+            <PersistentString
+               value = "taxText">
+            </PersistentString>
+            <PersistentString
+               value = "visit.total">
+            </PersistentString>
+            <PersistentString
+               value = "selectedServiceItems">
+            </PersistentString>
+            <PersistentString
+               value = "visit.tax">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
          contextName = "closure #1 in ServiceVisitFormView.serviceItemSection.getter:ServiceVisitFormView.swift">
          <PersistentStrings>
             <PersistentString
@@ -29,6 +52,34 @@
             </PersistentString>
             <PersistentString
                value = "visitToEdit">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "closure #2 in closure #2 in closure #3 in closure #1 in closure #1 in closure #1 in ServiceVisitFormView.body.getter:ServiceVisitFormView.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "stagedItem">
+            </PersistentString>
+            <PersistentString
+               value = "pendingItem">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "closure #1 in closure #1 in ServiceVisitFormView.visitDetailsSection.getter:ServiceVisitFormView.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "visitToEdit">
+            </PersistentString>
+            <PersistentString
+               value = "taxText">
+            </PersistentString>
+            <PersistentString
+               value = "costText">
+            </PersistentString>
+            <PersistentString
+               value = "newValue">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
@@ -47,25 +98,6 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
-         contextName = "closure #6 in closure #1 in ServiceVisitFormView.body.getter:ServiceVisitFormView.swift">
-         <PersistentStrings>
-            <PersistentString
-               value = "itemToEdit">
-            </PersistentString>
-         </PersistentStrings>
-      </ContextState>
-      <ContextState
-         contextName = "closure #3 in closure #1 in closure #1 in ServiceVisitFormView.body.getter:ServiceVisitFormView.swift">
-         <PersistentStrings>
-            <PersistentString
-               value = "costText">
-            </PersistentString>
-            <PersistentString
-               value = "Double(costText)">
-            </PersistentString>
-         </PersistentStrings>
-      </ContextState>
-      <ContextState
          contextName = "closure #2 in closure #1 in ServiceVisitFormView.serviceItemSection.getter:ServiceVisitFormView.swift">
          <PersistentStrings>
             <PersistentString
@@ -73,6 +105,14 @@
             </PersistentString>
             <PersistentString
                value = "stagedItem">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "closure #6 in closure #1 in ServiceVisitFormView.body.getter:ServiceVisitFormView.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "itemToEdit">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
@@ -88,13 +128,24 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
-         contextName = "closure #2 in closure #2 in closure #3 in closure #1 in closure #1 in closure #1 in ServiceVisitFormView.body.getter:ServiceVisitFormView.swift">
+         contextName = "SettingsView.generateCSV(from:):SettingsView.swift">
          <PersistentStrings>
             <PersistentString
-               value = "stagedItem">
+               value = "type.name">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "ServiceVisitFormView.updateTaxIfNeeded():ServiceVisitFormView.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "costText">
             </PersistentString>
             <PersistentString
-               value = "pendingItem">
+               value = "taxText">
+            </PersistentString>
+            <PersistentString
+               value = "Double(cleanedTax)">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
@@ -106,17 +157,6 @@
             </PersistentString>
             <PersistentString
                value = "mileage">
-            </PersistentString>
-         </PersistentStrings>
-      </ContextState>
-      <ContextState
-         contextName = "ServiceVisitFormView.loadVisitIfEditing():ServiceVisitFormView.swift">
-         <PersistentStrings>
-            <PersistentString
-               value = "savedItems">
-            </PersistentString>
-            <PersistentString
-               value = "selectedServiceItems">
             </PersistentString>
          </PersistentStrings>
       </ContextState>

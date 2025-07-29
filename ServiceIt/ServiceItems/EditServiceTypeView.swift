@@ -40,7 +40,7 @@ struct EditServiceTypeView: View {
             }
             .navigationTitle("Edit Service Item")
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button("Cancel") { dismiss() }
                 }
                 ToolbarItemGroup(placement: .keyboard) {

@@ -43,7 +43,7 @@ struct EditProviderFormView: View {
                 contact = provider.contactInfo
             }
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button("Cancel") { dismiss() }
                 }
             }

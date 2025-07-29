@@ -40,20 +40,17 @@ struct ItemPickerSheet: View {
                     TextField("Enter Cost", text: $costInput)
                         .keyboardType(.decimalPad)
                         .focused($isCostFieldFocused)
-                        .toolbar {
-                            ToolbarItemGroup(placement: .keyboard) {
-                                Spacer()
-                                Button("Done") {
-                                    isCostFieldFocused = false // Dismisses the keyboard
-                                }
-                            }
-                        }
-
                 }
             }
             .navigationTitle("Add Item")
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        isCostFieldFocused = false // Dismisses the keyboard
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
                     Button("Cancel") {
                         selectedItem = nil
                         costInput = ""
@@ -61,7 +58,7 @@ struct ItemPickerSheet: View {
                     }
                 }
 
-                ToolbarItem(placement: .confirmationAction) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button("Confirm") {
                         guard let item = selectedItem else {
                             isPresented = false
@@ -92,6 +89,7 @@ struct ItemPickerSheet: View {
                     }
 
                 }
+
             }
         }
     }

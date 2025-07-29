@@ -36,7 +36,7 @@ struct AddProviderView: View {
             }
             .navigationTitle("Add Provider")
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button("Cancel") { dismiss() }
                 }
             }
