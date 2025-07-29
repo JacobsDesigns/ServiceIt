@@ -20,31 +20,37 @@ struct EditItemSheet: View {
                     TextField("Service Item", text: $item.name)
                 }
                 Section("Cost") {
-                    TextField("Cost ($)", value: $item.cost, formatter: NumberFormatter())
-                        .keyboardType(.decimalPad)
-                        .focused($isCostFieldFocused)
-                        .toolbar {
-                            ToolbarItemGroup(placement: .keyboard){
-                                Spacer()
-                                Button("Done") {
-                                    isCostFieldFocused = false
+                    HStack{
+                        Text("$")
+                        TextField("Cost ($)", value: $item.cost, formatter: NumberFormatter())
+                            .keyboardType(.decimalPad)
+                            .focused($isCostFieldFocused)
+                            .toolbar {
+                                ToolbarItemGroup(placement: .keyboard) {
+                                    Spacer()
+                                    Button("Done") {
+                                        isCostFieldFocused = false
+                                    }
                                 }
                             }
-                        }
-                    
-                    Text("Previous Cost: \(String(format: "$%.2f", item.cost))")
-                        .foregroundStyle(.secondary)
+//                            .onAppear {
+//                                DispatchQueue.main.async {
+//                                    isCostFieldFocused = true
+//                                }
+//                            }
+                    }
                 }
             }
-            
-            .navigationTitle("Edit Item")
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction){
-                    Button("Save") {onSave(item)}
-                }
-                ToolbarItem(placement: .cancellationAction){
-                    Button("Cancel", action: onCancel)
-                }
+                .navigationTitle("Edit Item")
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing){
+                        Button("Cancel", action: onCancel)
+                    }
+                    ToolbarItem(placement: .topBarLeading){
+                        Button("Save") {onSave(item)}
+                    }
+                    
+                
             }
         }
     }

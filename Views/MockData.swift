@@ -50,11 +50,15 @@ enum MockData {
             let mileage = vehicle.currentMileage + Int.random(in: 500...(1500 * i))
             let date = Date.now
             let totalCost = savedItems.reduce(0.0) { $0 + $1.cost }
-
+            let tax = totalCost * 0.08
+            let totalCostWithTax = totalCost + tax
+            
             return ServiceVisit(
                 date: date,
                 mileage: mileage,
                 cost: totalCost,
+                tax : tax,
+                total: totalCostWithTax,
                 notes: "Visit \(i) for \(vehicle.name)",
                 photoData: nil,
                 vehicle: vehicle,

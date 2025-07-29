@@ -50,7 +50,7 @@ struct AddServiceItemView: View {
             }
             .navigationTitle("Add Service Item")
             .toolbar{
-                ToolbarItem(placement: .cancellationAction){
+                ToolbarItem(placement: .topBarTrailing){
                     Button("Cancel"){
                         dismiss()
                     }

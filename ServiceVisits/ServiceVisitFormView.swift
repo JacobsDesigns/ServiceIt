@@ -23,11 +23,14 @@ struct ServiceVisitFormView: View {
     @State private var selectedProvider: ServiceProvider?
     @State private var selectedServiceItems: Set<SavedServiceItem> = []
     @State private var costText: String = ""
+    @State private var taxText: String = ""
+    @State private var totalText: String = ""
     @State private var date: Date = .now
     @State private var mileage: String = ""
     @State private var notes: String = ""
     @State private var image: UIImage?
     @State private var showImagePicker = false
+    @State private var showCamera = false
     @State private var showDeleteAlert = false
     @State private var newServiceName: String = ""
     @State private var newItemCost: String = ""
@@ -62,6 +65,7 @@ struct ServiceVisitFormView: View {
                     Button("Add Service Item") {
                         isShowingSheet = true
                     }
+                    .buttonStyle(.borderedProminent)
                     .sheet(isPresented: $isShowingSheet) {
                         ItemPickerSheet(
                             serviceItems: serviceItems,
@@ -157,7 +161,11 @@ struct ServiceVisitFormView: View {
                             itemToEdit = item
                             isShowingEditSheet = true
                         } label: {
-                            Text("\(item.name) - $\(item.cost, specifier: "%.2f")")
+                            HStack {
+                                Text("\(item.name)")
+                                Spacer()
+                                Text("$\(item.cost, specifier: "%.2f")")
+                            }
                         }
                     }
                     .onDelete { indexSet in
@@ -195,9 +203,29 @@ struct ServiceVisitFormView: View {
                 
                 // 📷 Image Picker
                 Section {
-                    Button("Attach Photo") {
-                        showImagePicker = true
+                    HStack {
+                        Button("Attach Photo") {
+                            showImagePicker = true
+                        }
+                        .buttonStyle(.borderedProminent)
+                        Spacer()
+                        Button("Delete Photo") {
+                            //if let image {
+                                image = nil
+                            //}
+                        }
+                        .buttonStyle(.borderedProminent)
                     }
+//                    Button("Camera"){
+//                        if UIImagePickerController.isSourceTypeAvailable(.camera) {
+//                            //imagePicker.sourceType = .camera
+//                            showCamera = true
+//                        } else {
+//                            //imagePicker.sourceType = .photoLibrary
+//                            showImagePicker = true
+//                        }
+//                    }
+                    
                     if let image {
                         Image(uiImage: image)
                             .resizable()
@@ -224,15 +252,21 @@ struct ServiceVisitFormView: View {
                         Button("Delete Visit", role: .destructive) {
                             showDeleteAlert = true
                         }
+                        .buttonStyle(.borderedProminent)
                     }
                 }
                 
                 Section {
-                    Button("Add Item"){
-                        showAddItemSheet = true
-                    }
-                    Button("Add Provider"){
-                        showAddProviderSheet = true
+                    HStack {
+                        Button("Add Item"){
+                            showAddItemSheet = true
+                        }
+                        .buttonStyle(.borderedProminent)
+                        Spacer()
+                        Button("Add Provider"){
+                            showAddProviderSheet = true
+                        }
+                        .buttonStyle(.borderedProminent)
                     }
                 }
             }
@@ -246,13 +280,18 @@ struct ServiceVisitFormView: View {
                         .disabled(
                             selectedVehicle == nil ||
                             selectedProvider == nil ||
-                            cleanedCostText(mileage) == nil)
+                            cleanedMileageText(mileage) == nil)
                 }
             }
             .onAppear(perform: loadVisitIfEditing)
+            
             .sheet(isPresented: $showImagePicker) {
                 ImagePicker(selectedImage: $image)
             }
+            .sheet(isPresented: $showCamera) {
+                ImagePicker(selectedImage: $image, sourceType: .camera)
+            }
+            
             // 🧩 Sheet for adding service items — placed here to avoid nesting issues
             .sheet(isPresented: $showAddItemSheet) {
                 AddServiceItemView()
@@ -288,9 +327,39 @@ struct ServiceVisitFormView: View {
     
     var visitDetailsSection : some View {
         Section(header: Text("Visit Details")) {
-            TextField("Cost", text: $costText)
-                .keyboardType(.decimalPad)
             
+            HStack {
+                Text("Tax: ")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                TextField("Tax", text: $taxText)
+                    .keyboardType(.decimalPad)
+                    .frame(width: 100, alignment: .trailing)
+                    .onChange (of: taxText) {
+                        updateTaxIfNeeded()
+                    }
+            }
+            
+            HStack {
+               
+                Text("Cost for all Items:")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Text("\(costText)")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+            }
+            HStack {
+                Text("Grand Total")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Text("$\(totalText)")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+            }
             HStack {
                 TextField("Mileage", text: $mileage)
                     .keyboardType(.numberPad)
@@ -317,6 +386,7 @@ struct ServiceVisitFormView: View {
                         .frame(width: 100, height: 100)
                 }
             }
+ 
         }
     }
     
@@ -341,125 +411,6 @@ struct ServiceVisitFormView: View {
         }
     }
     
-//    @ViewBuilder
-//    func serviceItemSection() -> some View {
-//        Section(header: Text("Service Items")) {
-//
-//            Picker("Select an Item", selection: $selectedItemToAdd){
-//                Text("Select an Item").tag(nil as ServiceItem?)
-//                ForEach(serviceItems){ item in
-//                    Text("\(item.name) • \(item.cost, format: .currency(code: "USD"))").tag(Optional(item))
-//                }
-//            }
-//            .pickerStyle(.menu)
-//            .onChange(of: selectedItemToAdd) { _, newValue in
-//                print("Picker changed to: ", newValue?.name ?? "nil")
-//            guard let item = newValue else { return }
-//            let alreadyAdded = addedItems.contains { $0.name == item.name }
-//            guard !alreadyAdded else { return }
-//                
-//            let temp = SavedServiceItem(name: item.name, cost: item.cost)
-//            stagedItem = temp
-//                
-//            pendingItem = item
-//            costInput = String(format: "%.2f", item.cost)
-//            settingItem = true
-//            print(item.name)
-//            print(item.cost)
-//        }
-//            
-//            // Inline cost entry if a pending item is selected
-//            if let item = pendingItem {
-//                
-//                VStack(alignment: .leading, spacing: 10) {
-//                    Text("Enter cost for \(item.name):")
-//
-//                    TextField("Cost", text: $costInput)
-//                        .keyboardType(.decimalPad)
-//                        .textFieldStyle(.roundedBorder)
-//                        .onChange(of: costInput) { _, newValue in
-//                            if let newCost = Double(newValue), newCost >= 0 {
-//                                print("Valid cost Input: \(newCost)")
-//                                stagedItem!.cost = newCost
-//                            }
-//                        }
-//
-//                    HStack {
-//                        Button("Cancel") {
-//                            pendingItem = nil
-//                            selectedItemToAdd = nil
-//                            stagedItem = nil
-//                            costInput = ""
-//                        }
-//
-//                        Spacer()
-//
-//                        Button("Add Item") {
-//                            
-//                            print("\(stagedItem?.name ?? "No item")")
-//                            
-//                            let cost = Double(costInput) ?? item.cost
-//
-//                            if let visit = visitToEdit {
-//                                print("visitToEdit is set: \(visit.date)")
-//                                
-//                                let newItem = SavedServiceItem(name: item.name, cost: cost)
-//                                newItem.visit = visit
-//                                modelContext.insert(newItem)
-//
-//                                do {
-//                                    try modelContext.save()
-//                                    print("✅ Save succeeded")
-//                                } catch {
-//                                    print("🛑 Save failed: \(error)")
-//                                }
-//
-//                                addedItems.append(newItem)
-//                                
-//                            } else {
-//                                print("visitToEdit is nil — staging item")
-//                                let stagedItem = SavedServiceItem(name: item.name, cost: cost)
-//                                addedItems.append(stagedItem)
-//                            }
-//
-//                            pendingItem = nil
-//                            selectedItemToAdd = nil
-//                            costInput = ""
-//                        }
-//                    }
-//                }
-//                .padding(.vertical, 8)
-//            }
-//
-//
-//            // List of added items
-//            ForEach(addedItems) { item in
-//                HStack {
-//                    Text(item.name)
-//                    Spacer()
-//                    Text(item.cost, format: .currency(code: "USD"))
-//                        .foregroundStyle(.secondary)
-//                }
-//            }
-//            .onDelete { indexSet in
-//                addedItems.remove(atOffsets: indexSet)
-//            }
-//            .onChange (of: addedItems) { _, newValue in
-//                let totalCosts = newValue.reduce(0.0) { $0 + $1.cost}
-//                    costText = totalCosts.formatted(.currency(code: "USD"))
-//            }
-//
-//            // Subtotal
-//            HStack {
-//                Text("Subtotal")
-//                    .bold()
-//                Spacer()
-//                Text(addedItems.reduce(0.0) { $0 + $1.cost }, format: .currency(code: "USD"))
-//                    .bold()
-//                    .foregroundStyle(.primary)
-//            }
-//        }
-//    }
     
     // MARK: - Actions
 
@@ -474,13 +425,16 @@ struct ServiceVisitFormView: View {
         selectedServiceItems = Set(visit.savedItems)
         addedItems = visit.savedItems.sorted { $0.name < $1.name }
         costText = "\(visit.cost)"
+        //taxText = "\(visit.tax ?? 0.0)"
+        taxText = visit.tax?.formatted(.currency(code: "USD")) ?? ""
+        totalText = "\(visit.total)"
         mileage = formatMileage(visit.mileage)//"\(visit.mileage)"
         notes = visit.notes ?? ""
         image = visit.photoData.flatMap(UIImage.init(data:))
         date = visit.date
     }
 
-    func cleanedCostText(_ cost: String) -> Int? {
+    func cleanedMileageText(_ cost: String) -> Int? {
         let output = cost
         .trimmingCharacters(in: .whitespacesAndNewlines)
         .replacingOccurrences(of: "$", with: "")
@@ -488,9 +442,41 @@ struct ServiceVisitFormView: View {
         return Int(output)
     }
     
+    func updateTaxIfNeeded () {
+        
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = .decimal
+        
+        let cleanedCost = costText
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "$", with: "")
+            .replacingOccurrences(of: ",", with: "")
+        
+        let cleanedTax = taxText
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "$", with: "")
+            .replacingOccurrences(of: ",", with: "")
+        
+        if let cleanedCost = Double(cleanedCost) {
+            let cleanedTax = Double(cleanedTax) ?? 0.0
+            let totalTemp = cleanedCost + cleanedTax
+            totalText = numberFormatter.string(from: NSNumber(value: totalTemp)) ?? "\(totalTemp)"
+        }
+        
+        
+     
+    }
+    
+    
+    
     private func saveVisit() {
         
         let cleanedCostText = costText
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "$", with: "")
+            .replacingOccurrences(of: ",", with: "")
+        
+        let cleanedTax = taxText
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .replacingOccurrences(of: "$", with: "")
             .replacingOccurrences(of: ",", with: "")
@@ -501,23 +487,29 @@ struct ServiceVisitFormView: View {
             .replacingOccurrences(of: ".", with: "")
         
         guard
+            
             let vehicle = selectedVehicle,
             let provider = selectedProvider,
             let cost = Double(cleanedCostText),
             let mileageValue = Int(cleanedMileage)
+                
         else {
             print("❌ Visit save failed: missing required fields")
             return
         }
 
         let visit: ServiceVisit
-
+        let tax = Double(cleanedTax)
+        let totalCostWithTax = cost + (tax ?? 0.0)
+        
         if let existingVisit = visitToEdit {
             visit = existingVisit
         } else {
             visit = ServiceVisit(date: date,
                                  mileage: mileageValue,
                                  cost: cost,
+                                 tax : tax,
+                                 total: totalCostWithTax,
                                  notes: notes,
                                  photoData: image?.jpegData(compressionQuality: 0.8),
                                  vehicle: vehicle,
@@ -530,6 +522,8 @@ struct ServiceVisitFormView: View {
         visit.date = date
         visit.mileage = mileageValue
         visit.cost = cost
+        visit.tax = tax
+        visit.total = totalCostWithTax
         visit.notes = notes
         visit.photoData = image?.jpegData(compressionQuality: 0.8)
         visit.vehicle = vehicle
