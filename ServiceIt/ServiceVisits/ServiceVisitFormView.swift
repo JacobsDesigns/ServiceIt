@@ -46,6 +46,8 @@ struct ServiceVisitFormView: View {
     @State private var isShowingEditSheet = false
     @State private var itemToEdit: SavedServiceItem? = nil
     
+    let buttonWidth: CGFloat = 180
+    
     //@State private var stagedItem: SavedServiceItem? = nil
 
     var body: some View {
@@ -54,12 +56,6 @@ struct ServiceVisitFormView: View {
                 // 🚗 Vehicle Picker
                 vehiclePickerSection
                 
-                // 🛠 Service Provider
-                providerPickerSection
-                
-                // 🔧 Multi-Select Service Types
-                //serviceItemSection
-                //begin
                 Section() {
                     
                     Button("Add Service Item") {
@@ -174,6 +170,7 @@ struct ServiceVisitFormView: View {
                     .onChange (of: addedItems) { _, newValue in
                         let totalCosts = newValue.reduce(0.0) { $0 + $1.cost}
                         costText = totalCosts.formatted(.currency(code: "USD"))
+                        //costText = String(format: "%.2f", totalCosts)
                     }
                     
                     // Subtotal
@@ -187,6 +184,15 @@ struct ServiceVisitFormView: View {
                     }
                 }
                 
+                
+                // 🛠 Service Provider
+                //providerPickerSection
+                
+                // 🔧 Multi-Select Service Types
+                //serviceItemSection
+                //begin
+
+                
                 //ending
                 
                 // 💵 Cost / Mileage / Date
@@ -199,22 +205,32 @@ struct ServiceVisitFormView: View {
                 }
                 
                 // 🚗 Vehicle Photo
-                vehiclePhotoSection
+                //vehiclePhotoSection
                 
                 // 📷 Image Picker
                 Section {
+                    
+                    if let image {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: 180)
+                    }
+                    
                     HStack {
                         Button("Attach Photo") {
                             showImagePicker = true
                         }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(BorderedButtonStyle())
+                        //.frame (width: buttonWidth)
                         Spacer()
                         Button("Delete Photo") {
                             //if let image {
                                 image = nil
                             //}
                         }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(BorderedButtonStyle())
+                        //.frame (width: buttonWidth)
                     }
 //                    Button("Camera"){
 //                        if UIImagePickerController.isSourceTypeAvailable(.camera) {
@@ -226,27 +242,29 @@ struct ServiceVisitFormView: View {
 //                        }
 //                    }
                     
-                    if let image {
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 180)
+
+                }
+                
+
+                
+                Section {
+                    HStack {
+                        Button("Add Item"){
+                            showAddItemSheet = true
+                        }
+                        .buttonStyle(.borderedProminent)
+//                        .frame (width: buttonWidth)
+                        Spacer()
+                        Button("Add Provider"){
+                            showAddProviderSheet = true
+                        }
+                        .buttonStyle(.borderedProminent)
+//                        .frame (width: buttonWidth)
                     }
                 }
                 
                 // ✅ Save / Delete
                 Section {
-                    //                    Button(visitToEdit == nil ? "Add Visit" : "Save Changes") {
-                    //                        saveVisit()
-                    //                        dismiss()
-                    //                    }
-                    //                    .disabled(
-                    //                        selectedVehicle == nil ||
-                    //                        selectedProvider == nil //||
-                    //                        //selectedServiceItems.isEmpty //||
-                    //                        //Double(costText) == nil ||
-                    //                        //Int(mileage) == nil
-                    //                    )
                     
                     if visitToEdit != nil {
                         Button("Delete Visit", role: .destructive) {
@@ -256,19 +274,7 @@ struct ServiceVisitFormView: View {
                     }
                 }
                 
-                Section {
-                    HStack {
-                        Button("Add Item"){
-                            showAddItemSheet = true
-                        }
-                        .buttonStyle(.borderedProminent)
-                        Spacer()
-                        Button("Add Provider"){
-                            showAddProviderSheet = true
-                        }
-                        .buttonStyle(.borderedProminent)
-                    }
-                }
+                
             }
             .navigationTitle(visitToEdit == nil ? "New Visit" : "Edit Visit")
             .toolbar {
@@ -326,7 +332,15 @@ struct ServiceVisitFormView: View {
     }
     
     var visitDetailsSection : some View {
+        
         Section(header: Text("Visit Details")) {
+            
+            Picker("Provider", selection: $selectedProvider) {
+                Text("Select Provider").tag(nil as ServiceProvider?)
+                ForEach(serviceProviders) { provider in
+                    Text(provider.name).tag(provider as ServiceProvider?)
+                }
+            }
             
             HStack {
                 Text("Tax: ")
@@ -335,14 +349,13 @@ struct ServiceVisitFormView: View {
                 Spacer()
                 TextField("Tax", text: $taxText)
                     .keyboardType(.decimalPad)
-                    .frame(width: 100, alignment: .trailing)
+                    .frame(width: 85, alignment: .trailing)
                     .onChange (of: taxText) {
                         updateTaxIfNeeded()
                     }
             }
             
             HStack {
-               
                 Text("Cost for all Items:")
                     .font(.body)
                     .foregroundStyle(.secondary)
@@ -356,7 +369,7 @@ struct ServiceVisitFormView: View {
                     .font(.body)
                     .foregroundStyle(.secondary)
                 Spacer()
-                Text("$\(totalText)")
+                Text("\(totalText)")
                     .font(.body)
                     .foregroundStyle(.secondary)
             }
@@ -400,17 +413,17 @@ struct ServiceVisitFormView: View {
         }
     }
     
-    var providerPickerSection: some View {
-        Section() {
-            Picker("Provider", selection: $selectedProvider) {
-                Text("Select Provider").tag(nil as ServiceProvider?)
-                ForEach(serviceProviders) { provider in
-                    Text(provider.name).tag(provider as ServiceProvider?)
-                }
-            }
-        }
-    }
-    
+//    var providerPickerSection: some View {
+//        Section() {
+//            Picker("Provider", selection: $selectedProvider) {
+//                Text("Select Provider").tag(nil as ServiceProvider?)
+//                ForEach(serviceProviders) { provider in
+//                    Text(provider.name).tag(provider as ServiceProvider?)
+//                }
+//            }
+//        }
+//    }
+//    
     
     // MARK: - Actions
 
@@ -420,14 +433,17 @@ struct ServiceVisitFormView: View {
             return
         }
         print("Section appeared with pendingItem: ", pendingItem?.name ?? "nil")
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = "USD"
+        
         selectedVehicle = visit.vehicle
         selectedProvider = visit.provider
         selectedServiceItems = Set(visit.savedItems)
         addedItems = visit.savedItems.sorted { $0.name < $1.name }
-        costText = "\(visit.cost)"
-        //taxText = "\(visit.tax ?? 0.0)"
-        taxText = visit.tax?.formatted(.currency(code: "USD")) ?? ""
-        totalText = "\(visit.total)"
+        costText = formatter.string(from: NSNumber(value: visit.cost)) ?? ""
+        taxText = formatter.string(from: NSNumber(value: visit.tax ?? 0.0)) ?? ""
+        totalText = formatter.string(from: NSNumber(value: visit.total)) ?? ""
         mileage = formatMileage(visit.mileage)//"\(visit.mileage)"
         notes = visit.notes ?? ""
         image = visit.photoData.flatMap(UIImage.init(data:))
@@ -558,6 +574,17 @@ struct ServiceVisitFormView: View {
         return numberFormatter.string(from: NSNumber(value: mileage)) ?? "\(mileage)"
     }
     
+
+    
+}
+
+extension NumberFormatter {
+    static var currency: NumberFormatter {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = "USD"
+        return formatter
+    }
 }
 
 #Preview {

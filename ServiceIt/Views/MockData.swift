@@ -11,7 +11,7 @@ enum MockData {
     static func allVehicles() -> [Vehicle] {
         [
             Vehicle(name: "Civic",  modelYear: 2018, vin: "1234", license: "Vanitiy" ,currentMileage: 32000),
-            Vehicle(name: "Model S",  modelYear: 2022, vin: "1234", license: "Vanitiy" , currentMileage: 14500),
+            Vehicle(name: "Toyota",  modelYear: 2022, vin: "1234", license: "Vanitiy" , currentMileage: 14500),
             Vehicle(name: "Forester",  modelYear: 2020, vin: "1234", license: "Vanitiy" , currentMileage: 28000)
         ]
     }
@@ -19,7 +19,7 @@ enum MockData {
     static func allProviders() -> [ServiceProvider] {
         [
             ServiceProvider(name: "Quick Lube", contactInfo: "714-555-1234"),
-            ServiceProvider(name: "Tesla Service Center", contactInfo: "949-555-5678"),
+            ServiceProvider(name: "Toyota Service Center", contactInfo: "949-555-5678"),
             ServiceProvider(name: "Subie Garage", contactInfo: "949-555-2468")
         ]
     }

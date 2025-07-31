@@ -11,20 +11,28 @@ struct EditItemSheet: View {
     var onSave: (SavedServiceItem) -> Void
     var onCancel: () -> Void
     @FocusState private var isCostFieldFocused: Bool
+    @State private var costText = ""
+    
     
     var body: some View {
         NavigationStack {
             Form {
-                
                 Section("Service Item") {
-                    TextField("Service Item", text: $item.name)
+                    TextField("Service the Item", text: $item.name)
                 }
                 Section("Cost") {
                     HStack{
                         Text("$")
-                        TextField("Cost ($)", value: $item.cost, formatter: NumberFormatter())
+                        TextField("Cost ($)", text: $costText)
                             .keyboardType(.decimalPad)
                             .focused($isCostFieldFocused)
+                            .onChange(of: costText){
+                                if let value = Double(costText) {
+                                    item.cost = value
+                                } else {
+                                    item.cost = 0
+                                }
+                            }
                             .toolbar {
                                 ToolbarItemGroup(placement: .keyboard) {
                                     Spacer()
@@ -33,11 +41,6 @@ struct EditItemSheet: View {
                                     }
                                 }
                             }
-//                            .onAppear {
-//                                DispatchQueue.main.async {
-//                                    isCostFieldFocused = true
-//                                }
-//                            }
                     }
                 }
             }
@@ -49,9 +52,10 @@ struct EditItemSheet: View {
                     ToolbarItem(placement: .topBarLeading){
                         Button("Save") {onSave(item)}
                     }
-                    
-                
             }
+                .onAppear {
+                    costText = String(item.cost)
+                }
         }
     }
 }
