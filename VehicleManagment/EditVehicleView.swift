@@ -65,7 +65,7 @@ struct EditVehicleView: View {
             }
             .navigationTitle("Edit Vehicle")
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button("Cancel") { dismiss() }
                 }
             }

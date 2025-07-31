@@ -70,7 +70,7 @@ struct AddVehicleView: View {
             }
             .navigationTitle("Add Vehicle")
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button("Cancel") { dismiss() }
                 }
             }

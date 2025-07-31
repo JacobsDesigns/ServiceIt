@@ -18,9 +18,9 @@ struct EditServiceTypeView: View {
         NavigationStack {
             Form {
                 Section("Details") {
-                    TextField("Service Item Name", text: $item.name)
+                    TextField("Service Item", text: $item.name)
 
-                    TextField("Cost", text: $cost)
+                    TextField("Cost $", text: $cost)
                         .keyboardType(.numberPad)
                         .onChange(of: cost) {
                             if let value = Double(cost) {

@@ -37,6 +37,10 @@ struct AllRecordsView: View {
                             if allVehicles.count == 1 {
                                 selectedVehicle = allVehicles.first
                             }
+                            
+                            print("all Records: \(allRecords.count)")
+                            print("all Vehicles: \(allVehicles.count)")
+                            print("available Years: \(availableYears)")
                         }
                         
                         Picker("Sort", selection: $sortOption) {
@@ -58,7 +62,11 @@ struct AllRecordsView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.horizontal)
-                    
+                    .onAppear {
+                        for record in allRecords {
+                           print("Record date: \(record.date)")
+                        }
+                    }
                     
                     if let vehicle = selectedVehicle {
                         ServiceVisitListView(
@@ -77,6 +85,7 @@ struct AllRecordsView: View {
             .navigationTitle("Service Records")
         }
     }
+        
 }
 
 

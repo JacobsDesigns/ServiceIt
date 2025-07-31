@@ -19,14 +19,14 @@ struct VehicleSummaryCard: View {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFill()
-                    .frame(height: 140)
+                    .frame(height: 190)
                     .clipped()
                     .cornerRadius(12)
             } else {
                 Image(systemName: "car.fill")
                     .resizable()
                     .scaledToFit()
-                    .frame(height: 100)
+                    .frame(height: 130)
                     .foregroundColor(.gray)
                     .frame(maxWidth: .infinity)
             }

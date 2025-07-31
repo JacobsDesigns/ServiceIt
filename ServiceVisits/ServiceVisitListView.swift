@@ -39,9 +39,9 @@ struct ServiceVisitListView: View {
                             }
 
                             Text("Cost: \(visit.total, format: .currency(code: "USD"))")
-                                .foregroundColor(.green)
+                                .foregroundColor(.gray)
                             //Spacer()
-
+                            Divider()
                             Text(visit.provider?.name ?? "Unknown Provider")
                                 .font(.footnote)
                                 .italic()
@@ -63,6 +63,7 @@ struct ServiceVisitListView: View {
 
             if !filteredVisits.isEmpty {
                 HStack {
+                    Text("\(vehicle.name)")
                     Text("Total Cost")
                         .font(.headline)
                     Spacer()
@@ -90,10 +91,10 @@ struct ServiceVisitListView: View {
 //        .onAppear {
 //        for visit in allVisits {
 //            print("--- Visit ---")
-//            print("Vehicle ID: \(visit.vehicle?.persistentModelID)")
+//            //print("Vehicle ID: \(visit.vehicle?.persistentModelID)")
 //            print("View vehicle ID: \(vehicle.persistentModelID)")
 //            print("Provider exists: \(visit.provider != nil)")
-//            print("Items count: \(visit.items.count)")
+//            print("Items count: \(visit.savedItems.count)")
 //            print("Filter valid? \(filterValidVisits([visit]).isEmpty ? "❌" : "✅")")
 //            print("Year match? \(applyYearFilter(to: [visit]).isEmpty ? "❌" : "✅")")
 //            print("Search match? \(applySearchFilter(to: [visit]).isEmpty ? "❌" : "✅")")
@@ -106,29 +107,23 @@ struct ServiceVisitListView: View {
 private extension ServiceVisitListView {
     
     var filteredVisits: [ServiceVisit] {
-        allVisits.filter { visit in
-            visit.provider != nil &&
-            visit.vehicle?.persistentModelID == vehicle.persistentModelID //&&
-            //(!visit.items.isEmpty)// || visit.notes?.isEmpty == false)
+        let base = allVisits.filter {
+            $0.provider != nil &&
+            $0.vehicle?.persistentModelID == vehicle.persistentModelID
         }
+
+        let withYear = applyYearFilter(to: base)
+        let withSearch = applySearchFilter(to: withYear)
+        let sorted = applySorting(to: withSearch)
+        return sorted
     }
 
 //    var filteredVisits: [ServiceVisit] {
 //        allVisits.filter { visit in
 //            visit.provider != nil &&
-//            visit.vehicle?.persistentModelID == vehicle.persistentModelID &&
-//            !visit.items.isEmpty
+//            visit.vehicle?.persistentModelID == vehicle.persistentModelID //&&
+//            //(!visit.items.isEmpty)// || visit.notes?.isEmpty == false)
 //        }
-//    }
-
-//    var filteredVisits: [ServiceVisit] {
-//        applySorting(
-//            to: applySearchFilter(
-//                to: applyYearFilter(
-//                    to: filterValidVisits(allVisits)
-//                )
-//            )
-//        )
 //    }
 
     func filterValidVisits(_ visits: [ServiceVisit]) -> [ServiceVisit] {
