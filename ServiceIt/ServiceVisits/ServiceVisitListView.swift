@@ -17,6 +17,7 @@ struct ServiceVisitListView: View {
 
     @State private var searchText = ""
     @State private var showingAddRecord = false
+    @State private var showVehicleDetails = false
     @State private var recordToEdit: ServiceVisit?
 
     var body: some View {
@@ -76,17 +77,28 @@ struct ServiceVisitListView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
+                    showVehicleDetails = true
+                } label: {
+                    Label("Edit", systemImage: "pencil")
+                }
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
                     showingAddRecord = true
                 } label: {
                     Label("Add Record", systemImage: "plus")
                 }
             }
+
         }
         .sheet(isPresented: $showingAddRecord) {
             ServiceVisitFormView(preselectedVehicle: vehicle)
         }
         .sheet(item: $recordToEdit) { visit in
             ServiceVisitFormView(visitToEdit: visit)
+        }
+        .sheet(isPresented: $showVehicleDetails) {
+            EditVehicleView(vehicle: vehicle)
         }
 //        .onAppear {
 //        for visit in allVisits {

@@ -33,8 +33,30 @@ struct AddServiceItemView: View {
                         }
                 }
                 
-                Section {
-                    Button("Save Item") {
+//                Section {
+//                    Button("Save Item") {
+//                        let trimmedName = newServiceName.trimmingCharacters(in: .whitespacesAndNewlines)
+//                        let trimmedCost = newItemCost.trimmingCharacters(in: .whitespacesAndNewlines)
+//                        
+//                        guard !trimmedName.isEmpty else { return }
+//                        
+//                        let newItem = ServiceItem(name: trimmedName, cost: Double(trimmedCost) ?? 0)
+//                        modelContext.insert(newItem)
+//                        try? modelContext.save()
+//                        dismiss()
+//                    }
+//                    .disabled(newServiceName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+//                }
+            }
+            .navigationTitle("Add Service Item")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing){
+                    Button("Cancel"){
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .topBarLeading){
+                    Button("Add"){
                         let trimmedName = newServiceName.trimmingCharacters(in: .whitespacesAndNewlines)
                         let trimmedCost = newItemCost.trimmingCharacters(in: .whitespacesAndNewlines)
                         
@@ -46,14 +68,6 @@ struct AddServiceItemView: View {
                         dismiss()
                     }
                     .disabled(newServiceName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                }
-            }
-            .navigationTitle("Add Service Item")
-            .toolbar{
-                ToolbarItem(placement: .topBarTrailing){
-                    Button("Cancel"){
-                        dismiss()
-                    }
                 }
             }
         }
