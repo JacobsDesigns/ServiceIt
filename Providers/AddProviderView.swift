@@ -24,20 +24,28 @@ struct AddProviderView: View {
                     TextField("Contact Info", text: $contactInfo)
                 }
 
-                Section {
-                    Button("Save Provider") {
-                        let provider = ServiceProvider(name: name, contactInfo: contactInfo)
-                        modelContext.insert(provider)
-                        try? modelContext.save()
-                        dismiss()
-                    }
-                    .disabled(name.isEmpty)
-                }
+//                Section {
+//                    Button("Save Provider") {
+//                        let provider = ServiceProvider(name: name, contactInfo: contactInfo)
+//                        modelContext.insert(provider)
+//                        try? modelContext.save()
+//                        dismiss()
+//                    }
+//                    .disabled(name.isEmpty)
+//                }
             }
             .navigationTitle("Add Provider")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Add") {
+                        let provider = ServiceProvider(name: name, contactInfo: contactInfo)
+                        modelContext.insert(provider)
+                        try? modelContext.save()
+                        dismiss()
+                    }.disabled(name.isEmpty)
                 }
             }
         }

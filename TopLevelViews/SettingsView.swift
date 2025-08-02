@@ -233,7 +233,7 @@ struct SettingsView: View {
             Button("Add Vehicle") {
                 showingAddVehicle = true
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(BorderedButtonStyle())
         }
     }
 
@@ -262,7 +262,7 @@ struct SettingsView: View {
             Button("Add Provider") {
                 showingAddProvider = true
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(BorderedButtonStyle())
         }
     }
 
@@ -292,7 +292,7 @@ struct SettingsView: View {
             Button("Add Service Item") {
                 showingAddItem = true
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(BorderedButtonStyle())
         }
     }
 
@@ -827,7 +827,7 @@ extension View {
 
 
 
-//#Preview {
-//    SettingsView()
-//        .modelContainer(PreviewContainer.shared)
-//}
+#Preview {
+    SettingsView()
+        .modelContainer(PreviewContainer.shared)
+}

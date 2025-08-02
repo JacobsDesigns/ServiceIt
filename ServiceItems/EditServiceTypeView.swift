@@ -63,7 +63,7 @@ struct EditServiceTypeView: View {
 
 //#Preview {
 //    let container = PreviewContainer.shared
-//    let context = container.context
+//    let context = container.configurations.first!.self.persistentContainer.viewContext
 //    let mockType = ServiceItem(name: "Oil Change", cost: 50)
 //    context.insert(mockType)
 //

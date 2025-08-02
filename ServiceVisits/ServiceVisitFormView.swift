@@ -54,14 +54,17 @@ struct ServiceVisitFormView: View {
         NavigationStack {
             Form {
                 // 🚗 Vehicle Picker
-                vehiclePickerSection
+                //vehiclePickerSection
                 
                 Section() {
                     
-                    Button("Add Service Item") {
+                    Button //("Add Service Item")
+                    {
                         isShowingSheet = true
+                    } label: {
+                        Label("Service Item", systemImage: "plus.app.fill")
                     }
-                    .buttonStyle(.borderedProminent)
+                    //.buttonStyle(BorderedButtonStyle())
                     .sheet(isPresented: $isShowingSheet) {
                         ItemPickerSheet(
                             serviceItems: serviceItems,
@@ -252,13 +255,13 @@ struct ServiceVisitFormView: View {
                         Button("Add Item"){
                             showAddItemSheet = true
                         }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(BorderedButtonStyle())
 //                        .frame (width: buttonWidth)
                         Spacer()
                         Button("Add Provider"){
                             showAddProviderSheet = true
                         }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(BorderedButtonStyle())
 //                        .frame (width: buttonWidth)
                     }
                 }
@@ -270,7 +273,7 @@ struct ServiceVisitFormView: View {
                         Button("Delete Visit", role: .destructive) {
                             showDeleteAlert = true
                         }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(BorderedButtonStyle())
                     }
                 }
                 
@@ -324,7 +327,9 @@ struct ServiceVisitFormView: View {
 
             .alert("Delete Visit?", isPresented: $showDeleteAlert) {
                 Button("Delete", role: .destructive) { deleteVisit(); dismiss() }
+                    .buttonStyle(BorderedButtonStyle())
                 Button("Cancel", role: .cancel) {}
+                    .buttonStyle(BorderedButtonStyle())
             } message: {
                 Text("This action cannot be undone.")
             }
@@ -578,14 +583,14 @@ struct ServiceVisitFormView: View {
     
 }
 
-extension NumberFormatter {
-    static var currency: NumberFormatter {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = "USD"
-        return formatter
+    extension NumberFormatter {
+        static var currency: NumberFormatter {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .currency
+            formatter.currencyCode = "USD"
+            return formatter
+        }
     }
-}
 
 #Preview {
     let vehicle = MockData.allVehicles().first!

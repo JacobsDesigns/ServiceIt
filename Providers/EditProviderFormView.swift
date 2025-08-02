@@ -24,18 +24,18 @@ struct EditProviderFormView: View {
                 TextField("Provider Name", text: $name)
                 TextField("Contact Info", text: $contact)
 
-                Button("Save Changes") {
-                    provider.name = name
-                    provider.contactInfo = contact
-
-                    do {
-                        try modelContext.save()
-                        dismiss()
-                    } catch {
-                        print("Failed to save provider: \(error)")
-                    }
-                }
-                .disabled(name.isEmpty || contact.isEmpty)
+//                Button("Save Changes") {
+//                    provider.name = name
+//                    provider.contactInfo = contact
+//
+//                    do {
+//                        try modelContext.save()
+//                        dismiss()
+//                    } catch {
+//                        print("Failed to save provider: \(error)")
+//                    }
+//                }
+//                .disabled(name.isEmpty || contact.isEmpty)
             }
             .navigationTitle("Edit Provider")
             .onAppear {
@@ -46,7 +46,27 @@ struct EditProviderFormView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Cancel") { dismiss() }
                 }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Save") {
+                        provider.name = name
+                        provider.contactInfo = contact
+
+                        do {
+                            try modelContext.save()
+                            dismiss()
+                        } catch {
+                            print("Failed to save provider: \(error)")
+                        }
+                    }
+                    .disabled(name.isEmpty || contact.isEmpty)
+                    
+                }
             }
         }
     }
+}
+#Preview {
+    let newpro = ServiceProvider(name: "Provider", contactInfo: "" )
+    EditProviderFormView(provider: newpro)
+        .modelContainer(PreviewContainer.shared)
 }
