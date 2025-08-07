@@ -13,7 +13,9 @@ enum PreviewContainer {
             Vehicle.self,
             ServiceProvider.self,
             ServiceItem.self,
-            ServiceRecord.self
+            ServiceVisit.self,
+            RefuelVisit.self,
+            RefuelStation.self
         ])
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         do {
@@ -28,24 +30,25 @@ enum PreviewContainer {
     private static func seedMockData(into context: ModelContext) {
         let vehicles = MockData.allVehicles()
         let providers = MockData.allProviders()
+        let stations = MockData.mockStations()
 
         vehicles.forEach { context.insert($0) }
         providers.forEach { context.insert($0) }
+        stations.forEach { context.insert($0) }
 
         for (index, vehicle) in vehicles.enumerated() {
             let provider = providers[index % providers.count]
+            let station = stations[index % stations.count]
+            
             let visits = MockData.generateVisits(for: vehicle, provider: provider, count: 3)
             visits.forEach { context.insert($0) }
+            
+            let refuelVisits = MockData.generateRefuelVisits(for: vehicle, station: station, count: 2)
+            refuelVisits.forEach { context.insert($0) }
+            
         }
 
         try? context.save()
     }
-
-//    private static func seedMockData(into context: ModelContext) {
-//        MockData.allVehicles().forEach { context.insert($0) }
-//        MockData.allProviders().forEach { context.insert($0) }
-//        //MockData.generateVisits(for: <#Vehicle#>, count: <#Int#>).forEach { context.insert($0) }
-//        try? context.save()
-//    }
 }
 

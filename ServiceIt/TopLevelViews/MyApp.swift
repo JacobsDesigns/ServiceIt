@@ -17,10 +17,17 @@ struct MyApp: App {
                     .tabItem {
                         Label("Garage", systemImage: "car.fill")
                     }
-                AllRecordsView()
+                AllVisitsView()
                     .tabItem {
-                        Label("Service Records", systemImage: "list.bullet")
+                        Label("Records", systemImage: "list.bullet")
                     }
+                
+                AllRefuelsView() // Optional tab
+                
+                    .tabItem {
+                        Label("Refuel", systemImage: "fuelpump.and.filter")
+                    }
+                
                 ServiceScheduleView() // Optional tab
                 
                     .tabItem {
@@ -33,7 +40,7 @@ struct MyApp: App {
                     }
             }
         }
-        .modelContainer(for: [Vehicle.self, ServiceProvider.self, ServiceItem.self, ServiceRecord.self])
+        .modelContainer(for: [Vehicle.self, ServiceProvider.self, ServiceItem.self, ServiceVisit.self])
         
     }
 }

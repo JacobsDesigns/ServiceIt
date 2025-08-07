@@ -1,37 +1,37 @@
 //
-//  EditProviderFormView.swift
+//  EditRefuelStation.swift
 //  ServiceIt
 //
-//  Created by Jacob Filek on 7/12/25.
+//  Created by Jacob Filek on 8/5/25.
 //
 import SwiftUI
 import SwiftData
 
-struct EditProviderFormView: View {
+struct EditRefuelStation: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
 
-    @Bindable var provider: ServiceProvider
+    @Bindable var provider: RefuelStation
 
     @State private var name: String = ""
-    @State private var contact: String = ""
+    @State private var location: String = ""
 
     var body: some View {
         NavigationStack {
             Form {
                 HStack {
                     Text("Name: ")
-                    TextField("Provider Name", text: $name)
+                    TextField("", text: $name)
                 }
                 HStack {
-                    Text("Info: ")
-                    TextField("Contact Info", text: $contact)
+                    Text("Location: ")
+                    TextField("", text: $location)
                 }
             }
-            .navigationTitle("Edit Provider")
+            .navigationTitle("Edit Station")
             .onAppear {
                 name = provider.name
-                contact = provider.contactInfo
+                location = provider.location
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -40,16 +40,16 @@ struct EditProviderFormView: View {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Save") {
                         provider.name = name
-                        provider.contactInfo = contact
+                        provider.location = location
 
                         do {
                             try modelContext.save()
                             dismiss()
                         } catch {
-                            print("Failed to save provider: \(error)")
+                            print("Failed to save station: \(error)")
                         }
                     }
-                    .disabled(name.isEmpty || contact.isEmpty)
+                    .disabled(name.isEmpty || location.isEmpty)
                     
                 }
             }
@@ -57,7 +57,7 @@ struct EditProviderFormView: View {
     }
 }
 #Preview {
-    let newpro = ServiceProvider(name: "Provider", contactInfo: "" )
-    EditProviderFormView(provider: newpro)
+    let newStation = RefuelStation(name: "Shell", location: "RSM" )
+    EditRefuelStation(provider: newStation)
         .modelContainer(PreviewContainer.shared)
 }

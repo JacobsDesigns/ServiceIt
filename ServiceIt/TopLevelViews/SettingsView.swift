@@ -24,7 +24,8 @@ struct SettingsView: View {
     @Query(sort: \Vehicle.name) var vehicles: [Vehicle]
     @Query(sort: \ServiceProvider.name) var providers: [ServiceProvider]
     @Query(sort: \ServiceItem.name) var serviceItems: [ServiceItem]
-    @Query var allRecords: [ServiceRecord]
+    @Query(sort: \RefuelStation.name) var refuelStations: [RefuelStation]
+    @Query var allVisits: [ServiceVisit]
 
     // Sheet & Alert State
     @State private var showingAddVehicle = false
@@ -45,6 +46,13 @@ struct SettingsView: View {
     @State private var confirmedItemToDelete: ServiceItem?
     @State private var showDeleteItemWarning = false
     
+    @State private var showingAddStation = false
+    @State private var editingStation: RefuelStation?
+    @State private var stationToDelete: RefuelStation?
+    @State private var confirmedStationToDelete: RefuelStation?
+    @State private var showDeleteStationWarning = false
+    
+    
     // Import/Export State
     @State private var showImporter = false
     @State private var exportURL: URL?
@@ -58,6 +66,7 @@ struct SettingsView: View {
                     vehiclesSection
                     providersSection
                     serviceItemsSection
+                    stationsSections
                     dataManagementSection
                 }
                 .navigationTitle("Settings")
@@ -139,6 +148,14 @@ struct SettingsView: View {
                     EditServiceTypeView(item: $0)
                 }
                 
+                .sheet(isPresented: $showingAddStation) {
+                    AddRefuelStation()
+                }
+                .sheet(item: $editingStation) {
+                    EditRefuelStation(provider: $0)
+                }
+                
+                
                 .sheet(item: $exportedFile, onDismiss: {
                     showToast = true
                     //exportedFile = nil  // clean up state
@@ -184,9 +201,9 @@ struct SettingsView: View {
             if showToast {
                 VStack {
                     Spacer()
-                    Text("✅ Export complete")
+                    Text("✅ Export completed ... all records are in the folder 'ServiceIt'")
                         .padding()
-                        .background(Color.green.opacity(0.8))
+                        .background(Color.gray.opacity(1.8))
                         .cornerRadius(10)
                         .foregroundColor(.white)
                         .transition(.move(edge: .bottom))
@@ -194,7 +211,7 @@ struct SettingsView: View {
                 }
                 .padding(.bottom, 40)
                 .onAppear {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
                         showToast = false
                     }
                 }
@@ -296,12 +313,42 @@ struct SettingsView: View {
         }
     }
 
+    var stationsSections: some View {
+        Section("Gas Stations"){
+            ForEach(refuelStations) { station in
+                Button {
+                    editingStation = station
+                } label: {
+                    HStack {
+                        Text(station.name)
+                        Spacer()
+                        Text("\(station.location)")
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                    }
+                }
+//                .swipeActions {
+//                    Button(role: .destructive){
+//                        handleVehicleDeleteRequest(station)
+//                    } label {
+//                        Label("Delete", systemImage: "trash")
+//                    }
+//                }
+            }
+            Button("Add Gas Station") {
+                showingAddStation = true
+            }
+            .buttonStyle(BorderedButtonStyle())
+        }
+    }
+    
     var dataManagementSection: some View {
         Section("Data Management") {
             Button("Export Service Records") {
                 showShareLink = false
                 showExporter = true
                 exportCSV()
+                showToast = true
             }
             Button("Import from CSV") {
                 showImporter = true
@@ -311,55 +358,71 @@ struct SettingsView: View {
 
     // MARK: - Import & Export Helpers
 
+//    private func exportCSV() {
+//        let imageDirectory = URL.documentsDirectory.appendingPathComponent("ExportedImages")
+//
+//        // Ensure ExportedImages folder exists
+//        if !FileManager.default.fileExists(atPath: imageDirectory.path) {
+//            try? FileManager.default.createDirectory(at: imageDirectory, withIntermediateDirectories: true)
+//        }
+//
+//        let filename = "service_export.csv"
+//        let csvURL = URL.documentsDirectory.appendingPathComponent(filename)
+//        let zipURL = URL.documentsDirectory.appendingPathComponent("service_export.zip")
+//
+//        // Generate CSV content
+//        let csv = generateCSV(from: allVisits, imageDirectory: imageDirectory)
+//
+//        do {
+//            // Write CSV
+//            try csv.write(to: csvURL, atomically: true, encoding: .utf8)
+//
+//            // Collect files: CSV + Images
+//            var filesToZip: [URL] = [csvURL]
+//            if let imageFiles = try? FileManager.default.contentsOfDirectory(at: imageDirectory, includingPropertiesForKeys: nil) {
+//                filesToZip.append(contentsOf: imageFiles)
+//            }
+//
+//             //Create ZIP archive
+//            try FileManager.default.zipItem(
+//                at: csvURL.deletingLastPathComponent(), // directory containing the files
+//                to: zipURL,
+//                shouldKeepParent: false
+//            )
+//
+//             //Update exported file reference if needed
+//            if FileManager.default.fileExists(atPath: zipURL.path) {
+//                exportedFile = ExportedFile(url: zipURL)
+//                print("✅ ZIP export successful at: \(zipURL.path)")
+//            } else {
+//                print("⚠️ ZIP file not found after creation")
+//            }
+//
+//        } catch {
+//            print("❌ Export failed: \(error)")
+//        }
+//    }
+
     private func exportCSV() {
-        let imageDirectory = URL.documentsDirectory.appendingPathComponent("ExportedImages")
-
-        // Ensure ExportedImages folder exists
-        if !FileManager.default.fileExists(atPath: imageDirectory.path) {
-            try? FileManager.default.createDirectory(at: imageDirectory, withIntermediateDirectories: true)
-        }
-
         let filename = "service_export.csv"
         let csvURL = URL.documentsDirectory.appendingPathComponent(filename)
-        let zipURL = URL.documentsDirectory.appendingPathComponent("service_export.zip")
 
-        // Generate CSV content
-        let csv = generateCSV(from: allRecords, imageDirectory: imageDirectory)
+        // Generate CSV content (passing a dummy imageDirectory since it's unused)
+        let csv = generateCSV(from: allVisits, imageDirectory: URL(fileURLWithPath: "/dev/null"))
 
         do {
-            // Write CSV
             try csv.write(to: csvURL, atomically: true, encoding: .utf8)
-
-            // Collect files: CSV + Images
-            var filesToZip: [URL] = [csvURL]
-            if let imageFiles = try? FileManager.default.contentsOfDirectory(at: imageDirectory, includingPropertiesForKeys: nil) {
-                filesToZip.append(contentsOf: imageFiles)
-            }
-
-            // Create ZIP archive
-            try FileManager.default.zipItem(
-                at: csvURL.deletingLastPathComponent(), // directory containing the files
-                to: zipURL,
-                shouldKeepParent: false
-            )
-
-            // Update exported file reference if needed
-            if FileManager.default.fileExists(atPath: zipURL.path) {
-                exportedFile = ExportedFile(url: zipURL)
-                print("✅ ZIP export successful at: \(zipURL.path)")
-            } else {
-                print("⚠️ ZIP file not found after creation")
-            }
-
+            print("✅ CSV export successful at: \(csvURL.path)")
         } catch {
             print("❌ Export failed: \(error)")
         }
     }
 
-    private func generateCSV(from records: [ServiceRecord], imageDirectory: URL) -> String {
+
+    private func generateCSV(from records: [ServiceVisit], imageDirectory: URL) -> String {
         print("total records received: \(records.count)")
         
-        var lines = ["date,mileage,cost,type,provider,contactInfo,vehicle,year,vin,license,typeSuggestedMileage,imageFilename"]
+        var lines = ["date,mileage,cost,items,itemsCost,provider,contactInfo,vehicle,year,vin,license,imageFilename"]
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
 
@@ -369,7 +432,7 @@ struct SettingsView: View {
             
             guard let vehicle = record.vehicle,
                   let provider = record.provider,
-                  !record.items.isEmpty,
+                  !record.savedItems.isEmpty,
                   isValid(vehicle), isValid(provider) else {
                 print("⚠️ Skipping invalid record: \(record)")
                 continue
@@ -378,14 +441,14 @@ struct SettingsView: View {
             let date = formatter.string(from: record.date)
             let mileage = "\(record.mileage)"
             let cost = String(format: "%.2f", record.cost)
-            let typeNames = record.items.map { $0.name }.joined(separator: ";")
+            let items = record.savedItems.map { $0.name }.joined(separator: ";")
             let providerName = provider.name
             let contactInfo = provider.contactInfo
             let vehicleName = vehicle.name
             let year = "\(vehicle.modelYear)"
             let vin = vehicle.vin
             let license = vehicle.license
-            let suggestedMilage = record.items.map {String($0.cost)}.joined(separator: ";")
+            let itemsCost = record.savedItems.map {String($0.cost)}.joined(separator: ";")
 
             var imageFilename: String = ""
 
@@ -405,7 +468,7 @@ struct SettingsView: View {
                 }
             }
 
-            lines.append("\(date),\(mileage),\(cost),\(typeNames),\(providerName),\(contactInfo),\(vehicleName),\(year),\(vin),\(license),\(suggestedMilage),\(imageFilename)")
+            lines.append("\(date),\(mileage),\(cost),\(items),\(itemsCost),\(providerName),\(contactInfo),\(vehicleName),\(year),\(vin),\(license),\(imageFilename)")
             
             print ("appended line for \(vehicle.name)")
         }
@@ -427,18 +490,17 @@ struct SettingsView: View {
     private func isServiceTypeInUse(_ serviceType: ServiceItem) -> Bool {
         let typeID = serviceType.persistentModelID
 
-        let descriptor = FetchDescriptor<ServiceRecord>(
-            predicate: #Predicate<ServiceRecord> {
-                $0.items.contains(where: { $0.persistentModelID == typeID })
+        let descriptor = FetchDescriptor<ServiceVisit>(
+            predicate: #Predicate<ServiceVisit> {
+                $0.savedItems.contains(where: { $0.persistentModelID == typeID })
             }
         )
         return (try? modelContext.fetch(descriptor))?.isEmpty == false
     }
 
-
     private func isServiceProviderInUse(_ provider: ServiceProvider) -> Bool {
         let providerID = provider.persistentModelID
-        let descriptor = FetchDescriptor<ServiceRecord>(
+        let descriptor = FetchDescriptor<ServiceVisit>(
             predicate: #Predicate {
                 $0.provider?.persistentModelID == providerID
             }
@@ -448,7 +510,7 @@ struct SettingsView: View {
 
     private func isVehicleInUse(_ vehicle: Vehicle) -> Bool {
         let vehicleID = vehicle.persistentModelID
-        let descriptor = FetchDescriptor<ServiceRecord>(
+        let descriptor = FetchDescriptor<ServiceVisit>(
             predicate: #Predicate {
                 $0.vehicle?.persistentModelID == vehicleID
             }
@@ -457,11 +519,12 @@ struct SettingsView: View {
     }
     
     
+    
     private func handleServiceTypeDeleteRequest(_ type: ServiceItem) {
         let typeID = type.persistentModelID
-        let descriptor = FetchDescriptor<ServiceRecord>(
-            predicate: #Predicate<ServiceRecord> {
-                $0.items.contains(where: { $0.persistentModelID == typeID })
+        let descriptor = FetchDescriptor<ServiceVisit>(
+            predicate: #Predicate<ServiceVisit> {
+                $0.savedItems.contains(where: { $0.persistentModelID == typeID })
             }
         )
         if let linkedRecords = try? modelContext.fetch(descriptor), !linkedRecords.isEmpty {
@@ -472,10 +535,9 @@ struct SettingsView: View {
         }
     }
 
-    
     private func handleProviderDeleteRequest(_ provider: ServiceProvider) {
         let providerID = provider.persistentModelID
-        let descriptor = FetchDescriptor<ServiceRecord>(
+        let descriptor = FetchDescriptor<ServiceVisit>(
             predicate: #Predicate {
                 $0.provider?.persistentModelID == providerID
             }
@@ -491,7 +553,7 @@ struct SettingsView: View {
 
     private func handleVehicleDeleteRequest(_ vehicle: Vehicle) {
         let vehicleID = vehicle.persistentModelID
-        let descriptor = FetchDescriptor<ServiceRecord>(
+        let descriptor = FetchDescriptor<ServiceVisit>(
             predicate: #Predicate {
                 $0.vehicle?.persistentModelID == vehicleID
             }
@@ -504,28 +566,29 @@ struct SettingsView: View {
             confirmedVehicleToDelete = vehicle
         }
     }
+    
+
 
     
     private func unlinkServiceType(from type: ServiceItem) {
         let typeID = type.persistentModelID
 
-        let descriptor = FetchDescriptor<ServiceRecord>(
-            predicate: #Predicate<ServiceRecord> {
-                $0.items.contains(where: { $0.persistentModelID == typeID })
+        let descriptor = FetchDescriptor<ServiceVisit>(
+            predicate: #Predicate<ServiceVisit> {
+                $0.savedItems.contains(where: { $0.persistentModelID == typeID })
             }
         )
 
         if let records = try? modelContext.fetch(descriptor) {
             for record in records {
-                record.items.removeAll(where: { $0.persistentModelID == typeID })
+                record.savedItems.removeAll(where: { $0.persistentModelID == typeID })
             }
         }
     }
 
-
     private func unlinkServiceProvider(from provider: ServiceProvider) {
         let providerID = provider.persistentModelID
-        let descriptor = FetchDescriptor<ServiceRecord>(
+        let descriptor = FetchDescriptor<ServiceVisit>(
             predicate: #Predicate {
                 $0.provider?.persistentModelID == providerID
             }
@@ -540,7 +603,7 @@ struct SettingsView: View {
 
     private func unlinkVehicle(from vehicle: Vehicle) {
         let vehicleID = vehicle.persistentModelID
-        let descriptor = FetchDescriptor<ServiceRecord>(
+        let descriptor = FetchDescriptor<ServiceVisit>(
             predicate: #Predicate {
                 $0.vehicle?.persistentModelID == vehicleID
             }
@@ -617,7 +680,7 @@ struct SettingsView: View {
     }
     
     private func deleteExistingServiceRecords() {
-        let recordDescriptor = FetchDescriptor<ServiceRecord>()
+        let recordDescriptor = FetchDescriptor<ServiceVisit>()
         let vehicleDescriptor = FetchDescriptor<Vehicle>()
         let providerDescriptor = FetchDescriptor<ServiceProvider>()
         let typeDescriptor = FetchDescriptor<ServiceItem>()

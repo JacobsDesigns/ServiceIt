@@ -20,28 +20,30 @@ struct EditServiceTypeView: View {
                 Section("Details") {
                     TextField("Service Item", text: $item.name)
 
-                    TextField("Cost $", text: $cost)
-                        .keyboardType(.numberPad)
-                        .onChange(of: cost) {
-                            if let value = Double(cost) {
-                                item.cost = value
-                            } else {
-                                item.cost = 0
+                    HStack {
+                        Text("Cost: $")
+                        TextField("Cost $", text: $cost)
+                            .keyboardType(.decimalPad)
+                            .onChange(of: cost) {
+                                if let value = Double(cost) {
+                                    item.cost = value
+                                } else {
+                                    item.cost = 0
+                                }
                             }
-                        }
-                }
-
-                Section {
-                    Button("Save Changes") {
-                        try? modelContext.save()
-                        dismiss()
                     }
                 }
+
             }
             .navigationTitle("Edit Service Item")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Save") {
+                        try? modelContext.save()
+                        dismiss() }
                 }
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
@@ -59,6 +61,10 @@ struct EditServiceTypeView: View {
     private func hideKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
+}
+#Preview {
+    let sampleItem = ServiceItem(name: "Oil Change", cost: 49.99)
+    return EditServiceTypeView(item: sampleItem)
 }
 
 //#Preview {
