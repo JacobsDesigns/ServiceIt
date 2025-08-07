@@ -28,7 +28,7 @@ struct ServiceVisitFormView: View {
     @State private var date: Date = .now
     @State private var mileage: String = ""
     @State private var notes: String = ""
-    @State private var image: UIImage?
+    @State private var image: UIImage? = nil
     @State private var showImagePicker = false
     @State private var showCamera = false
     @State private var showDeleteAlert = false
@@ -47,8 +47,7 @@ struct ServiceVisitFormView: View {
     @State private var itemToEdit: SavedServiceItem? = nil
     
     let buttonWidth: CGFloat = 180
-    
-    //@State private var stagedItem: SavedServiceItem? = nil
+    @State private var showFullScreenViewer = false
 
     var body: some View {
         NavigationStack {
@@ -76,84 +75,6 @@ struct ServiceVisitFormView: View {
                         )
                     }
                     
-                    
-                    
-                    //                    Picker("", selection: $selectedItemToAdd){
-                    //                        Text("Service Items").tag(nil as ServiceItem?)
-                    //                        ForEach(serviceItems){ item in
-                    //                            Text("\(item.name) • \(item.cost, format: .currency(code: "USD"))").tag(Optional(item))
-                    //                        }
-                    //                    }
-                    //                    .pickerStyle(.menu)
-                    //                    .onChange(of: selectedItemToAdd) { _, newValue in
-                    //                    guard let item = newValue else { return }
-                    //                    let alreadyAdded = addedItems.contains { $0.name == item.name }
-                    //                    guard !alreadyAdded else { return }
-                    //
-                    //                    pendingItem = item
-                    //                    costInput = String(format: "%.2f", item.cost)
-                    //                    settingItem = true
-                    //                }
-                    
-                    // Inline cost entry if a pending item is selected
-                    //                    if let item = pendingItem {
-                    //
-                    //                        VStack(alignment: .leading, spacing: 10) {
-                    //                            Text("Enter cost for \(item.name):")
-                    //
-                    //                            TextField("Cost", text: $costInput)
-                    //                                .keyboardType(.decimalPad)
-                    //                                .textFieldStyle(.roundedBorder)
-                    //                                .onChange(of: costInput) { _, newValue in
-                    //                                    if let newCost = Double(newValue), newCost >= 0 {
-                    //                                        print("Valid cost Input: \(newCost)")
-                    //                                        pendingItem!.cost = newCost
-                    //                                    }
-                    //                                }
-                    //
-                    //                            HStack {
-                    //                                Button("Cancel") {
-                    //                                    pendingItem = nil
-                    //                                    selectedItemToAdd = nil
-                    //                                    costInput = ""
-                    //                                }
-                    //
-                    //                                Spacer()
-                    //
-                    //                                Button()
-                    //                                {
-                    //                                    let cost = Double(costInput) ?? item.cost
-                    //                                    if let visit = visitToEdit {
-                    //                                        let newItem = SavedServiceItem(name: item.name, cost: cost)
-                    //                                        newItem.visit = visit
-                    //                                        addedItems.append(newItem)
-                    //
-                    //                                    } else {
-                    //                                        let stagedItem = SavedServiceItem(name: item.name, cost: cost)
-                    //                                        addedItems.append(stagedItem)
-                    //                                    }
-                    //
-                    //                                    pendingItem = nil
-                    //                                    selectedItemToAdd = nil
-                    //                                    costInput = ""
-                    //                                } label: {
-                    //                                    Label("Add Item", systemImage: "plus")
-                    //                                }
-                    //                            }
-                    //                        }
-                    //                        .padding(.vertical, 8)
-                    //                    }
-                    
-                    
-                    // List of added items
-                    //                    ForEach(addedItems) { item in
-                    //                        HStack {
-                    //                            Text(item.name)
-                    //                            Spacer()
-                    //                            Text(item.cost, format: .currency(code: "USD"))
-                    //                                .foregroundStyle(.secondary)
-                    //                        }
-                    //                    }
                     ForEach(addedItems.indices, id: \.self) { index in
                         let item = addedItems[index]
                         Button {
@@ -188,16 +109,6 @@ struct ServiceVisitFormView: View {
                 }
                 
                 
-                // 🛠 Service Provider
-                //providerPickerSection
-                
-                // 🔧 Multi-Select Service Types
-                //serviceItemSection
-                //begin
-
-                
-                //ending
-                
                 // 💵 Cost / Mileage / Date
                 visitDetailsSection
                 
@@ -212,44 +123,41 @@ struct ServiceVisitFormView: View {
                 
                 // 📷 Image Picker
                 Section {
-                    
+
                     if let image {
                         Image(uiImage: image)
                             .resizable()
                             .scaledToFit()
                             .frame(height: 180)
+                            .onTapGesture {
+                                DispatchQueue.main.async {
+                                    showFullScreenViewer = true
+                                }
+                            }
                     }
-                    
                     HStack {
                         Button("Attach Photo") {
                             showImagePicker = true
                         }
                         .buttonStyle(BorderedButtonStyle())
-                        //.frame (width: buttonWidth)
                         Spacer()
                         Button("Delete Photo") {
-                            //if let image {
                                 image = nil
-                            //}
                         }
                         .buttonStyle(BorderedButtonStyle())
-                        //.frame (width: buttonWidth)
                     }
-//                    Button("Camera"){
-//                        if UIImagePickerController.isSourceTypeAvailable(.camera) {
-//                            //imagePicker.sourceType = .camera
-//                            showCamera = true
-//                        } else {
-//                            //imagePicker.sourceType = .photoLibrary
-//                            showImagePicker = true
-//                        }
-//                    }
-                    
-
                 }
-                
+                .fullScreenCover(isPresented: $showFullScreenViewer) {
+                    if let image {
+                        ZoomableImageView(image: image) {
+                            showFullScreenViewer = false
+                        }
+                    } else {
+                        Text("No Image")
+                    }
+                }
 
-                
+                // Add Provider and Item
                 Section {
                     HStack {
                         Button("Add Item"){
@@ -297,11 +205,9 @@ struct ServiceVisitFormView: View {
             .sheet(isPresented: $showImagePicker) {
                 ImagePicker(selectedImage: $image)
             }
-            .sheet(isPresented: $showCamera) {
-                ImagePicker(selectedImage: $image, sourceType: .camera)
-            }
-            
-            // 🧩 Sheet for adding service items — placed here to avoid nesting issues
+//            .sheet(isPresented: $showCamera) {
+//                ImagePicker(selectedImage: $image, sourceType: .camera)
+//            }
             .sheet(isPresented: $showAddItemSheet) {
                 AddServiceItemView()
             }
@@ -323,7 +229,7 @@ struct ServiceVisitFormView: View {
                 )
             }
 
-        
+
 
             .alert("Delete Visit?", isPresented: $showDeleteAlert) {
                 Button("Delete", role: .destructive) { deleteVisit(); dismiss() }
@@ -352,14 +258,13 @@ struct ServiceVisitFormView: View {
                     .font(.body)
                     .foregroundStyle(.secondary)
                 Spacer()
-                TextField("Tax", text: $taxText)
+                TextField("", text: $taxText)
                     .keyboardType(.decimalPad)
                     .frame(width: 85, alignment: .trailing)
                     .onChange (of: taxText) {
                         updateTaxIfNeeded()
                     }
             }
-            
             HStack {
                 Text("Cost for all Items:")
                     .font(.body)
@@ -417,18 +322,7 @@ struct ServiceVisitFormView: View {
             }
         }
     }
-    
-//    var providerPickerSection: some View {
-//        Section() {
-//            Picker("Provider", selection: $selectedProvider) {
-//                Text("Select Provider").tag(nil as ServiceProvider?)
-//                ForEach(serviceProviders) { provider in
-//                    Text(provider.name).tag(provider as ServiceProvider?)
-//                }
-//            }
-//        }
-//    }
-//    
+   
     
     // MARK: - Actions
 
@@ -487,8 +381,6 @@ struct ServiceVisitFormView: View {
         
      
     }
-    
-    
     
     private func saveVisit() {
         
@@ -591,6 +483,63 @@ struct ServiceVisitFormView: View {
             return formatter
         }
     }
+
+
+
+
+
+struct ZoomableImageView: View {
+    let image: UIImage
+    let onDismiss: () -> Void
+
+    @State private var scale: CGFloat = 1.0
+    @State private var lastScale: CGFloat = 1.0
+    @State private var offset: CGSize = .zero
+    @State private var lastOffset: CGSize = .zero
+
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+            Color.black.ignoresSafeArea()
+
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFit()
+                .scaleEffect(scale)
+                .offset(offset)
+                .gesture(
+                    MagnificationGesture()
+                        .onChanged { value in
+                            scale = lastScale * value
+                        }
+                        .onEnded { _ in
+                            lastScale = scale
+                        }
+                )
+                .gesture(
+                    DragGesture()
+                        .onChanged { value in
+                            offset = CGSize(
+                                width: lastOffset.width + value.translation.width,
+                                height: lastOffset.height + value.translation.height
+                            )
+                        }
+                        .onEnded { _ in
+                            lastOffset = offset
+                        }
+                )
+
+            Button {
+                onDismiss()
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 34))
+                    .foregroundColor(.white)
+                    .padding()
+            }
+        }
+    }
+}
+
 
 #Preview {
     let vehicle = MockData.allVehicles().first!

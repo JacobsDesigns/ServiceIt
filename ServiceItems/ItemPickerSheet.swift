@@ -26,8 +26,13 @@ struct ItemPickerSheet: View {
                                 selectedItem = item
                                 costInput = String(format: "%.2f", item.cost)
                             } label: {
-                                Text("\(item.name) • \(item.cost, format: .currency(code: "USD"))")
-                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                HStack {
+                                    Text(item.name)
+                                    //Spacer()
+                                    Text("\(item.cost, format: .currency(code: "USD"))")
+                                }
+//                                Text("\(item.name) • \(item.cost, format: .currency(code: "USD"))")
+//                                    .frame(maxWidth: .infinity, alignment: .leading)
                             }
                         }
                     } label: {
@@ -93,4 +98,31 @@ struct ItemPickerSheet: View {
             }
         }
     }
+}
+#Preview {
+    struct PreviewWrapper: View {
+        @State private var selectedItem: ServiceItem? = nil
+        @State private var costInput: String = ""
+        @State private var addedItems: [SavedServiceItem] = []
+        @State private var isPresented: Bool = true
+
+        let mockItems = [
+            ServiceItem(name: "Oil Change", cost: 49.99),
+            ServiceItem(name: "Tire Rotation", cost: 29.99),
+            ServiceItem(name: "Brake Inspection", cost: 39.99)
+        ]
+
+        var body: some View {
+            ItemPickerSheet(
+                serviceItems: mockItems,
+                selectedItem: $selectedItem,
+                costInput: $costInput,
+                addedItems: $addedItems,
+                visitToEdit: nil,
+                isPresented: $isPresented
+            )
+        }
+    }
+
+    return PreviewWrapper()
 }

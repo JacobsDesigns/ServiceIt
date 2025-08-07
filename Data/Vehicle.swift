@@ -19,6 +19,7 @@ class Vehicle {
     var photoData: Data?
 
     @Relationship var serviceVisits: [ServiceVisit] = []
+    @Relationship var refuelVisits: [RefuelVisit] = []
 
     init(name: String, modelYear: Int, vin: String, license: String, currentMileage: Int, photoData: Data? = nil) {
         self.name = name

@@ -19,34 +19,25 @@ struct AddServiceItemView: View {
         NavigationStack{
             Form {
                 Section {
-                    TextField("Service Item", text: $newServiceName)
-                    TextField("Cost", text: $newItemCost)
-                        .keyboardType(.decimalPad)
-                        .focused($isCostFieldFocused)
-                        .toolbar {
-                            ToolbarItemGroup(placement: .keyboard) {
-                                Spacer()
-                                Button("Done") {
-                                    isCostFieldFocused = false // Dismisses the keyboard
+                    HStack {
+                        Text("Service Item: ")
+                        TextField("", text: $newServiceName)
+                    }
+                    HStack {
+                        Text("Cost: $")
+                        TextField("", text: $newItemCost)
+                            .keyboardType(.decimalPad)
+                            .focused($isCostFieldFocused)
+                            .toolbar {
+                                ToolbarItemGroup(placement: .keyboard) {
+                                    Spacer()
+                                    Button("Done") {
+                                        isCostFieldFocused = false // Dismisses the keyboard
+                                    }
                                 }
                             }
-                        }
+                    }
                 }
-                
-//                Section {
-//                    Button("Save Item") {
-//                        let trimmedName = newServiceName.trimmingCharacters(in: .whitespacesAndNewlines)
-//                        let trimmedCost = newItemCost.trimmingCharacters(in: .whitespacesAndNewlines)
-//                        
-//                        guard !trimmedName.isEmpty else { return }
-//                        
-//                        let newItem = ServiceItem(name: trimmedName, cost: Double(trimmedCost) ?? 0)
-//                        modelContext.insert(newItem)
-//                        try? modelContext.save()
-//                        dismiss()
-//                    }
-//                    .disabled(newServiceName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-//                }
             }
             .navigationTitle("Add Service Item")
             .toolbar {

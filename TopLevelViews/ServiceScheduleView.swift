@@ -9,7 +9,7 @@ import SwiftData
 import Charts
 
 struct ServiceScheduleView: View {
-    @Query var allRecords: [ServiceRecord]
+    @Query var allRecords: [ServiceVisit]
     @Query var allVehicles: [Vehicle]
     @Query var allServiceTypes: [ServiceItem]
     
@@ -23,7 +23,7 @@ struct ServiceScheduleView: View {
                     Picker("Vehicle", selection: $selectedVehicle) {
                         Text("Vehicle").tag(nil as Vehicle?)
                         ForEach(allVehicles) {
-                            Text("\($0.plainModelYearString) \($0.name)").tag(Optional($0))
+                            Text("\($0.name)").tag(Optional($0))
                         }
                     }
                     .pickerStyle(.menu)

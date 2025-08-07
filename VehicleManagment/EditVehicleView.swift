@@ -5,7 +5,6 @@
 //  Created by Jacob Filek on 7/18/25.
 //
 
-
 import SwiftUI
 import SwiftData
 import PhotosUI
@@ -30,40 +29,53 @@ struct EditVehicleView: View {
             Form {
                 Section(header: Text("Vehicle Info")) {
                     
-                    TextField("Name", text: $vehicle.name)
+                    HStack {
+                        Text("Name: ")
+                        TextField("Name", text: $vehicle.name)
+                    }
 //                        .focused($isFocused, equals: .first)
 //                        .background(DoneToolbar {
 //                            isFocused = nil
 //                        })
                     
-                    TextField("VIN", text: $vehicle.vin)
+                    HStack {
+                        Text("VIN: ")
+                        TextField("VIN", text: $vehicle.vin)
+                    }
 //                        .focused($isFocused, equals: .second)
 //                        .background(DoneToolbar {
 //                            isFocused = nil
 //                        })
                     
-                    TextField("License Plate", text: $vehicle.license)
+                    HStack {
+                        Text("License Plate: ")
+                        TextField("License Plate", text: $vehicle.license)
+                    }
 //                        .focused($isFocused, equals: .third)
 //                        .background(DoneToolbar {
 //                            isFocused = nil
 //                        })
                     
-                    TextField("Model Year", text: Binding(get: {String(vehicle.modelYear)},
-                                                          set: {vehicle.modelYear = Int($0) ?? vehicle.modelYear}))
-                    .keyboardType(.numberPad)
-                    .focused($isFocused, equals: .year)
-                    .background(DoneToolbar {
-                        isFocused = nil
-                    })
-                    
-                    TextField("Current Mileage", value: $vehicle.currentMileage, format: .number)
+                    HStack {
+                        Text("Year: ")
+                        TextField("Model Year", text: Binding(get: {String(vehicle.modelYear)},
+                                                              set: {vehicle.modelYear = Int($0) ?? vehicle.modelYear}))
                         .keyboardType(.numberPad)
-                        .focused($isFocused, equals: .mileage)
+                        .focused($isFocused, equals: .year)
                         .background(DoneToolbar {
                             isFocused = nil
                         })
-                        
+                    }
                     
+                    HStack {
+                        Text("Mileage: ")
+                        TextField("Current Mileage", value: $vehicle.currentMileage, format: .number)
+                            .keyboardType(.numberPad)
+                            .focused($isFocused, equals: .mileage)
+                            .background(DoneToolbar {
+                                isFocused = nil
+                            })
+                    }
                 }
 
                 Section(header: Text("Photo")) {
@@ -89,12 +101,6 @@ struct EditVehicleView: View {
                                     }
                                 }
 
-                Section {
-                    Button("Save Changes") {
-                        try? modelContext.save()
-                        dismiss()
-                    }
-                }
             }
             .navigationTitle("Edit Vehicle")
             .toolbar {

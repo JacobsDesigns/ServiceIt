@@ -8,6 +8,7 @@ import SwiftUI
 import SwiftData
 
 struct ServiceVisitListView: View {
+    
     @Environment(\.modelContext) private var modelContext
     var vehicle: Vehicle
     @Query var allVisits: [ServiceVisit]
@@ -18,6 +19,7 @@ struct ServiceVisitListView: View {
     @State private var searchText = ""
     @State private var showingAddRecord = false
     @State private var showVehicleDetails = false
+    @State private var showAddRefuelVisit = false
     @State private var recordToEdit: ServiceVisit?
 
     var body: some View {
@@ -35,8 +37,6 @@ struct ServiceVisitListView: View {
                                             .font(.headline)
                                     }
                                 }
-
-                               
                             }
 
                             Text("Cost: \(visit.total, format: .currency(code: "USD"))")
@@ -89,6 +89,13 @@ struct ServiceVisitListView: View {
                     Label("Add Record", systemImage: "plus")
                 }
             }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    showAddRefuelVisit = true
+                } label: {
+                    Label("Add Refuel", systemImage: "fuelpump")
+                }
+            }
 
         }
         .sheet(isPresented: $showingAddRecord) {
@@ -100,10 +107,14 @@ struct ServiceVisitListView: View {
         .sheet(isPresented: $showVehicleDetails) {
             EditVehicleView(vehicle: vehicle)
         }
+        .sheet(isPresented: $showAddRefuelVisit){
+            RefuelVistFormView(vehicle: vehicle)
+        }
+        
 //        .onAppear {
 //        for visit in allVisits {
 //            print("--- Visit ---")
-//            //print("Vehicle ID: \(visit.vehicle?.persistentModelID)")
+//            print("Vehicle ID: \(String(describing: visit.vehicle?.persistentModelID))")
 //            print("View vehicle ID: \(vehicle.persistentModelID)")
 //            print("Provider exists: \(visit.provider != nil)")
 //            print("Items count: \(visit.savedItems.count)")
@@ -130,21 +141,13 @@ private extension ServiceVisitListView {
         return sorted
     }
 
-//    var filteredVisits: [ServiceVisit] {
-//        allVisits.filter { visit in
-//            visit.provider != nil &&
-//            visit.vehicle?.persistentModelID == vehicle.persistentModelID //&&
-//            //(!visit.items.isEmpty)// || visit.notes?.isEmpty == false)
+//    func filterValidVisits(_ visits: [ServiceVisit]) -> [ServiceVisit] {
+//        visits.filter {
+//            !$0.savedItems.isEmpty &&
+//            $0.provider != nil &&
+//            $0.vehicle?.persistentModelID == vehicle.persistentModelID
 //        }
 //    }
-
-    func filterValidVisits(_ visits: [ServiceVisit]) -> [ServiceVisit] {
-        visits.filter {
-            !$0.savedItems.isEmpty &&
-            $0.provider != nil &&
-            $0.vehicle?.persistentModelID == vehicle.persistentModelID
-        }
-    }
 
     func applyYearFilter(to visits: [ServiceVisit]) -> [ServiceVisit] {
         guard let year = selectedYear else { return visits }

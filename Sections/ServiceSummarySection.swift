@@ -11,7 +11,7 @@ import Foundation
 
 
 struct ServiceSummarySection: View {
-    var records: [ServiceRecord]
+    var records: [ServiceVisit]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {

@@ -26,15 +26,33 @@ struct AddVehicleView: View {
         NavigationStack {
             Form {
                 Section(header: Text("Vehicle Info")) {
-                    TextField("Name", text: $name)
-                    TextField("VIN", text: $vin)
-                    TextField("License Plate", text: $license)
                     
-                    TextField("Model Year", text: $modelYearString)
-                        .keyboardType(.numberPad)
+                    HStack {
+                        Text("Name: ")
+                        TextField("", text: $name)
+                    }
+                    
+                    HStack {
+                        Text("VIN: ")
+                        TextField("", text: $vin)
+                    }
+                    
+                    HStack {
+                        Text("License Plate: ")
+                        TextField("", text: $license)
+                    }
+                    
+                    HStack {
+                        Text("Model Year: ")
+                        TextField("", text: $modelYearString)
+                            .keyboardType(.numberPad)
+                    }
 
-                    TextField("Current Mileage", value: $mileage, format: .number)
-                        .keyboardType(.numberPad)
+                    HStack {
+                        Text("Current Mileage: ")
+                        TextField("", value: $mileage, format: .number)
+                            .keyboardType(.numberPad)
+                    }
                 }
                 
                 Section(header: Text("Photo")) {
@@ -58,20 +76,18 @@ struct AddVehicleView: View {
                             .cornerRadius(12)
                     }
                 }
-
-
-                Section {
-                    Button("Save Vehicle") {
-                        saveVehicle()
-                        dismiss()
-                    }
-                    .disabled(!isValid)
-                }
             }
             .navigationTitle("Add Vehicle")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Add") {
+                        saveVehicle()
+                        dismiss()
+                    }
+                    .disabled(!isValid)
                 }
             }
         }
