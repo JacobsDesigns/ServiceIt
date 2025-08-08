@@ -32,20 +32,19 @@ struct RefuelVistFormView: View {
     var computedTotal: Double {
         (Double(gallons) ?? 0.0) * (Double(costPerGallon) ?? 0.0)
     }
-    
-//    init(vehicle: Vehicle, preselectedVehicle: Vehicle? = nil, refuelVisittoEdit: RefuelVisit? = nil) {
-//        self.vehicle = vehicle
-//        self.preselectedVehicle = preselectedVehicle
-//        self.refuelVisitToEdit = refuelVisittoEdit
-//        _selectedVehicle = State(initialValue: vehicle)
-//    }
+    @State private var addedCarWash: Bool = false
+    @State private var carWashCost: Double = 0.0
+
+
     
     var body: some View {
         NavigationStack {
             Form {
                 Section {
                     Text("Selected Vehicle: \(vehicle.name)")
-                         
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                    
                     Picker("Station", selection: $selectedStation){
                         Text("Station").tag(nil as RefuelStation?)
                         ForEach(allStations) { station in
@@ -53,13 +52,16 @@ struct RefuelVistFormView: View {
                         }
                     }
                     
-                    HStack {
+                    VStack (alignment: .leading) {
                         Text("Odometer: ")
-                        TextField("", text: $mileage)
-                            .keyboardType(.numberPad)
-                        Button("Use Current"){
-                            if let mileage = selectedVehicle?.currentMileage {
-                                self.mileage = String(mileage)
+                        HStack {
+                            
+                            TextField("", text: $mileage)
+                                .keyboardType(.numberPad)
+                            Button("Use Current"){
+                                if let mileage = selectedVehicle?.currentMileage {
+                                    self.mileage = formatMileage(mileage)
+                                }
                             }
                         }
                     }
@@ -77,9 +79,27 @@ struct RefuelVistFormView: View {
                             .keyboardType(.decimalPad)
                         }
                     HStack {
-                        Text("Total: \(String(format: "%.2f", computedTotal))")
+                        Text("Total: $\(String(format: "%.2f", computedTotal))")
                     }
                 }
+                
+                Section {
+                    Toggle("Added Car Wash", isOn: $addedCarWash)
+                        //.toggleStyle(.checkbox)
+
+                    if addedCarWash {
+                        VStack {
+                            TextField("Car Wash Cost", value: $carWashCost, format: .currency(code: "USD"))
+                                .keyboardType(.decimalPad)
+                                .padding(.bottom)
+
+                            Text("Grand Total: $\(String(format: "%.2f", computedTotal + (carWashCost)))")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                }
+
+                
                 Section {
                     
                     if refuelVisitToEdit != nil {
@@ -125,6 +145,8 @@ struct RefuelVistFormView: View {
         gallons = String(visit.gallons)
         costPerGallon = String(visit.costPerGallon)
         selectedStation = visit.refuelStation
+        addedCarWash = visit.addedCarWash
+        carWashCost = visit.carWashCost ?? 0
     }
     
     private func saveVisit() {
@@ -164,6 +186,7 @@ struct RefuelVistFormView: View {
                 total: computedTotal,
                 vehicle: vehicle,
                 refuelStation: selectedStation
+                //carWashCost: carWashCost
             )
             modelContext.insert(visit)
         }
@@ -174,6 +197,9 @@ struct RefuelVistFormView: View {
         visit.costPerGallon = Double(cleanedCostPerGallon) ?? 0.0
         visit.vehicle = vehicle
         visit.refuelStation = selectedStation
+        visit.total = computedTotal
+        visit.addedCarWash = addedCarWash
+        visit.carWashCost = carWashCost
         
         do {
             try modelContext.save()
@@ -188,6 +214,12 @@ struct RefuelVistFormView: View {
         guard let visit = refuelVisitToEdit else { return }
         modelContext.delete(visit)
         try? modelContext.save()
+    }
+    
+    func formatMileage(_ mileage: Int) -> String {
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = .decimal
+        return numberFormatter.string(from: NSNumber(value: mileage)) ?? "\(mileage)"
     }
 }
 

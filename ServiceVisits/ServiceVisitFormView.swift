@@ -286,7 +286,7 @@ struct ServiceVisitFormView: View {
             HStack {
                 TextField("Mileage", text: $mileage)
                     .keyboardType(.numberPad)
-                Button("Use Current Mileage"){
+                Button("Use Current"){
                     if let mileage = selectedVehicle?.currentMileage {
                         self.mileage = formatMileage(mileage)
                     }
@@ -470,7 +470,6 @@ struct ServiceVisitFormView: View {
         numberFormatter.numberStyle = .decimal
         return numberFormatter.string(from: NSNumber(value: mileage)) ?? "\(mileage)"
     }
-    
 
     
 }
@@ -483,7 +482,6 @@ struct ServiceVisitFormView: View {
             return formatter
         }
     }
-
 
 
 

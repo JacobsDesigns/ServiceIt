@@ -32,6 +32,11 @@ struct PredictiveInsightsSection: View {
                     y: .value("Cost", data.total)
                 )
                 .foregroundStyle(.blue)
+                .annotation(position: .top){
+                    Text(data.total, format: .currency(code: "USD"))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
             .chartYAxis {
                 AxisMarks(position: .leading){
@@ -45,12 +50,48 @@ struct PredictiveInsightsSection: View {
 }
 
 
-//#Preview("Predictive Insights") {
-//    let mockRecords = [
-////        ServiceRecord.mock(type: "Oil Change", cost: 45.00, mileage: 10000),
-////        ServiceRecord.mock(type: "Oil Change", cost: 48.00, mileage: 15000),
-////        ServiceRecord.mock(type: "Oil Change", cost: 50.00, mileage: 20000)
-//    ]
-//     PredictiveInsightsSection(records: mockRecords)
-//}
+#Preview {
+    let sampleRecords: [ServiceVisit] = [
+        ServiceVisit(
+            date: Calendar.current.date(from: DateComponents(year: 2022, month: 3, day: 15))!,
+            mileage: 15000,
+            cost: 120.0,
+            total: 120.0,
+            savedItems: []
+        ),
+        ServiceVisit(
+            date: Calendar.current.date(from: DateComponents(year: 2022, month: 7, day: 10))!,
+            mileage: 18000,
+            cost: 80.0,
+            total: 80.0,
+            savedItems: []
+        ),
+        ServiceVisit(
+            date: Calendar.current.date(from: DateComponents(year: 2023, month: 2, day: 5))!,
+            mileage: 22000,
+            cost: 150.0,
+            total: 150.0,
+            savedItems: []
+        ),
+        ServiceVisit(
+            date: Calendar.current.date(from: DateComponents(year: 2023, month: 11, day: 20))!,
+            mileage: 27000,
+            cost: 95.0,
+            total: 95.0,
+            savedItems: []
+        ),
+        ServiceVisit(
+            date: Calendar.current.date(from: DateComponents(year: 2024, month: 6, day: 1))!,
+            mileage: 32000,
+            cost: 200.0,
+            total: 200.0,
+            savedItems: []
+        )
+    ]
+
+    PredictiveInsightsSection(records: sampleRecords)
+}
+
+
+
 

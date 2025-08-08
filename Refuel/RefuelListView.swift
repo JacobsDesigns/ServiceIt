@@ -32,18 +32,25 @@ struct RefuelListView: View {
                         recordToEdit = visit
                     } label: {
                         VStack(alignment: .leading, spacing: 6) {
-                            Text("Cost: \(visit.total, format: .currency(code: "USD"))")
+                            Text("Fuel Cost: \(visit.total, format: .currency(code: "USD"))")
                                 .foregroundColor(.gray)
+                                
+                            HStack {
+                                if let mpg = mpg {
+                                    Text("MPG: \(String(format: "%.2f", mpg))")
+                                        .foregroundColor(mpg < 20 ? .red : .green)
+                                } else {
+                                    Text("MPG: —")
+                                        .foregroundColor(.gray)
+                                }
 
-                            if let mpg = mpg {
-                                Text("MPG: \(String(format: "%.2f", mpg))")
-                                    .font(.caption)
-                                    .foregroundColor(mpg < 20 ? .red : .green)
-                            } else {
-                                Text("MPG: —")
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
+                                Spacer()
+
+                                Text("Gallons: \(visit.gallons, specifier: "%.2f")")
+                                        .foregroundColor(.gray)
                             }
+                            .font(.caption)
+
 
                             Divider()
 
@@ -69,40 +76,9 @@ struct RefuelListView: View {
             .listRowSpacing(4)
             .searchable(text: $searchText)
 
-//            List {
-//                ForEach(filteredVisits) { visit in
-//                    Button {
-//                        recordToEdit = visit
-//                    } label: {
-//                        VStack(alignment: .leading, spacing: 6) {
-//                            Text("Cost: \(visit.total, format: .currency(code: "USD"))")
-//                                .foregroundColor(.gray)
-//                            Divider()
-//                            HStack {
-//                                Text(visit.refuelStation?.name ?? "Unknown Provider")
-//                                   
-//                                Text(visit.refuelStation?.location ?? "")
-//                            } .font(.footnote)
-//                                .italic()
-//                                .foregroundColor(.secondary)
-//                            
-//                            HStack {
-//                                Text(visit.date.formatted(date: .abbreviated, time: .omitted))
-//                                Spacer()
-//                                Text("Mileage: \(visit.odometer)")
-//                            }
-//                            .font(.footnote)
-//                            .foregroundColor(.gray)
-//                        }
-//                    }
-//                }
-//            }
-            .listRowSpacing(4)
-            .searchable(text: $searchText)
-
             if !filteredVisits.isEmpty {
                 HStack {
-                    Text("\(vehicle.name)")
+                    //Text("\(vehicle.name)")
                     Text("Total Cost")
                         .font(.headline)
                     Spacer()
@@ -110,6 +86,21 @@ struct RefuelListView: View {
                         .font(.headline)
                 }
                 .padding()
+            }
+            
+            if !filteredVisits.isEmpty {
+                if let avg = averageMPG {
+                    HStack {
+                        Text("Average MPG")
+                            .font(.headline)
+                        Spacer()
+                        Text(String(format: "%.2f", avg))
+                            .font(.headline)
+                            .foregroundColor(avg < 20 ? .red : .green)
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom, 8)
+                }
             }
         }
         .toolbar {
@@ -187,7 +178,13 @@ private extension RefuelListView {
         Decimal(filteredVisits.reduce(0) { $0 + $1.total })
     }
     
-    
+    var averageMPG: Double? {
+        let mpgValues = visitsWithMPG.compactMap { $0.mpg }
+        guard !mpgValues.isEmpty else { return nil }
+        let total = mpgValues.reduce(0, +)
+        return total / Double(mpgValues.count)
+    }
+
     var visitsWithMPG: [(visit: RefuelVisit, mpg: Double?)] {
         let sorted = allVisits
             .filter { $0.vehicle?.id == vehicle.id }
