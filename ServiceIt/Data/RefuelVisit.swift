@@ -18,6 +18,9 @@ class RefuelVisit : Identifiable {
     @Relationship var vehicle: Vehicle?
     @Relationship var refuelStation: RefuelStation?
     
+    @Attribute var addedCarWash: Bool = false
+    @Attribute var carWashCost: Double?
+
     init(odometer: Int, date: Date, gallons: Double, costPerGallon: Double, total: Double, vehicle: Vehicle? = nil, refuelStation: RefuelStation? = nil) {
         self.odometer = odometer
         self.date = date

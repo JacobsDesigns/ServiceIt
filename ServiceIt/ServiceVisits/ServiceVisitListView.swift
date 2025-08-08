@@ -86,16 +86,10 @@ struct ServiceVisitListView: View {
                 Button {
                     showingAddRecord = true
                 } label: {
-                    Label("Add Record", systemImage: "plus")
+                    Label("Add Record", systemImage: "wrench.and.screwdriver")
                 }
             }
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    showAddRefuelVisit = true
-                } label: {
-                    Label("Add Refuel", systemImage: "fuelpump")
-                }
-            }
+
 
         }
         .sheet(isPresented: $showingAddRecord) {

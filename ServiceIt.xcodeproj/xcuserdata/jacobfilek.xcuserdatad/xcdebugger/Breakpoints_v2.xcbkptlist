@@ -206,9 +206,9 @@
             filePath = "ServiceIt/ServiceVisits/ServiceVisitListView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "160"
-            endingLineNumber = "160"
-            landmarkName = "applySearchFilter(to:)"
+            startingLineNumber = "154"
+            endingLineNumber = "154"
+            landmarkName = "applyYearFilter(to:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -222,10 +222,10 @@
             filePath = "ServiceIt/ServiceVisits/ServiceVisitListView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "144"
-            endingLineNumber = "144"
-            landmarkName = "ServiceVisitListView"
-            landmarkType = "21">
+            startingLineNumber = "138"
+            endingLineNumber = "138"
+            landmarkName = "filteredVisits"
+            landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -238,10 +238,10 @@
             filePath = "ServiceIt/ServiceVisits/ServiceVisitListView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "152"
-            endingLineNumber = "152"
-            landmarkName = "applyYearFilter(to:)"
-            landmarkType = "7">
+            startingLineNumber = "146"
+            endingLineNumber = "146"
+            landmarkName = "ServiceVisitListView"
+            landmarkType = "21">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -302,9 +302,9 @@
             filePath = "ServiceIt/ServiceVisits/ServiceVisitListView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "133"
-            endingLineNumber = "133"
-            landmarkName = "filteredVisits"
+            startingLineNumber = "127"
+            endingLineNumber = "127"
+            landmarkName = "body"
             landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>
@@ -318,8 +318,8 @@
             filePath = "ServiceIt/ServiceVisits/ServiceVisitListView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "138"
-            endingLineNumber = "138"
+            startingLineNumber = "132"
+            endingLineNumber = "132"
             landmarkName = "filteredVisits"
             landmarkType = "24">
          </BreakpointContent>
@@ -350,8 +350,8 @@
             filePath = "ServiceIt/ServiceVisits/ServiceVisitFormView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "493"
-            endingLineNumber = "493"
+            startingLineNumber = "491"
+            endingLineNumber = "491"
             landmarkName = "ZoomableImageView"
             landmarkType = "14">
          </BreakpointContent>
@@ -366,8 +366,8 @@
             filePath = "ServiceIt/ServiceVisits/ServiceVisitFormView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "504"
-            endingLineNumber = "504"
+            startingLineNumber = "502"
+            endingLineNumber = "502"
             landmarkName = "body"
             landmarkType = "24">
          </BreakpointContent>
@@ -398,8 +398,8 @@
             filePath = "ServiceIt/Refuel/RefuelVistFormView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "118"
-            endingLineNumber = "118"
+            startingLineNumber = "138"
+            endingLineNumber = "138"
             landmarkName = "loadIfEditing()"
             landmarkType = "7">
          </BreakpointContent>
@@ -430,9 +430,9 @@
             filePath = "ServiceIt/Refuel/RefuelListView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "148"
-            endingLineNumber = "148"
-            landmarkName = "visitsWithMPG"
+            startingLineNumber = "139"
+            endingLineNumber = "139"
+            landmarkName = "filteredVisits"
             landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>
@@ -446,9 +446,9 @@
             filePath = "ServiceIt/Refuel/RefuelListView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "153"
-            endingLineNumber = "153"
-            landmarkName = "visitsWithMPG"
+            startingLineNumber = "144"
+            endingLineNumber = "144"
+            landmarkName = "filteredVisits"
             landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>
@@ -462,10 +462,10 @@
             filePath = "ServiceIt/Refuel/RefuelListView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "160"
-            endingLineNumber = "160"
-            landmarkName = "visitsWithMPG"
-            landmarkType = "24">
+            startingLineNumber = "151"
+            endingLineNumber = "151"
+            landmarkName = "applyYearFilter(to:)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -478,10 +478,10 @@
             filePath = "ServiceIt/Refuel/RefuelListView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "167"
-            endingLineNumber = "167"
-            landmarkName = "PreviewWrapper"
-            landmarkType = "14">
+            startingLineNumber = "158"
+            endingLineNumber = "158"
+            landmarkName = "applySearchFilter(to:)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -497,6 +497,70 @@
             startingLineNumber = "61"
             endingLineNumber = "61"
             landmarkName = "body"
+            landmarkType = "24">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "FA9A8CDC-A5D5-4C0E-9891-D34A2A8142CB"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ServiceIt/Refuel/RefuelListView.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "29"
+            endingLineNumber = "29"
+            landmarkName = "body"
+            landmarkType = "24">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "8CAD7000-587A-4B7E-ACD8-B4A73CD702AD"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ServiceIt/Data/RefuelVisit.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "37"
+            endingLineNumber = "37"
+            landmarkName = "mpg(previousOdometer:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "849FB107-F222-4F37-B325-14EFA2536552"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ServiceIt/Refuel/RefuelListView.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "207"
+            endingLineNumber = "207"
+            landmarkName = "mpgLookup"
+            landmarkType = "24">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "DE1B4D1D-8CE9-4AE5-90EB-463AB6E84714"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ServiceIt/Refuel/RefuelListView.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "189"
+            endingLineNumber = "189"
+            landmarkName = "visitsWithMPG"
             landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>

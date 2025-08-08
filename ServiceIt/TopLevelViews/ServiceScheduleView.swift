@@ -40,7 +40,7 @@ struct ServiceScheduleView: View {
                         }
 
                         // 📅 Upcoming Reminders
-                        UpcomingServiceSection(vehicle: selectedVehicle, serviceTypes: allServiceTypes)
+                        //UpcomingServiceSection(vehicle: selectedVehicle, serviceTypes: allServiceTypes)
 
                         Divider()
 
