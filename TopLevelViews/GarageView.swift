@@ -11,7 +11,8 @@ struct GarageView: View {
     @Query var vehicles: [Vehicle]
     @State private var showingAddVehicleForm = false
     @State private var sortOption: RecordSortOption = .dateDescending
-    
+    @State private var longPressedVehicle: Vehicle?
+
     var body: some View {
         NavigationStack {
             VStack {
@@ -32,6 +33,9 @@ struct GarageView: View {
                             ForEach(vehicles) { vehicle in
                                 NavigationLink(value: vehicle) {
                                     VehicleSummaryCard(vehicle: vehicle)
+                                        .onLongPressGesture {
+                                            longPressedVehicle = vehicle
+                                        }
                                 }
                                 .buttonStyle(.plain)
                                 .padding(.horizontal)
@@ -57,6 +61,10 @@ struct GarageView: View {
             .sheet(isPresented: $showingAddVehicleForm) {
                 AddVehicleView()
             }
+            .sheet(item: $longPressedVehicle) { vehicle in
+                EditVehicleView(vehicle: vehicle) // Replace with your actual sheet view
+            }
+
         }
     }
 }

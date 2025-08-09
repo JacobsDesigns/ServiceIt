@@ -12,7 +12,7 @@ struct ServiceScheduleView: View {
     @Query var allRecords: [ServiceVisit]
     @Query var allVehicles: [Vehicle]
     @Query var allServiceTypes: [ServiceItem]
-    
+    @Query var allRefuelRecords: [RefuelVisit]
     @State private var selectedVehicle: Vehicle?
 
     var body: some View {
@@ -51,6 +51,11 @@ struct ServiceScheduleView: View {
 
                         // 🔧 Predictive Maintenance
                         PredictiveInsightsSection(records: vehicleRecords)
+                        
+                        Divider()
+
+                        MPGInsightsSection(refuelRecords: allRefuelRecords, selectedVehicle: selectedVehicle)
+                        
                     } else {
                         Text("Select a vehicle to view its service schedule.")
                             .foregroundColor(.secondary)
@@ -60,7 +65,7 @@ struct ServiceScheduleView: View {
                     }
                 }
             }
-            .navigationTitle("Service Schedule")
+            .navigationTitle("Summeries")
         }
     }
 }

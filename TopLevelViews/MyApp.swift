@@ -19,28 +19,30 @@ struct MyApp: App {
                     }
                 AllVisitsView()
                     .tabItem {
-                        Label("Records", systemImage: "list.bullet")
+                        Label("Records", systemImage: "doc.text")
                     }
-                
-                AllRefuelsView() // Optional tab
-                
+                AllRefuelsView()
                     .tabItem {
                         Label("Refuel", systemImage: "fuelpump.and.filter")
                     }
-                
-                ServiceScheduleView() // Optional tab
-                
+                ServiceScheduleView()
                     .tabItem {
-                        Label("Schedule", systemImage: "calendar")
+                        Label("Summeries", systemImage: "chart.bar")
                     }
-                
                 SettingsView()
                     .tabItem {
                         Label("Settings", systemImage: "gear")
                     }
             }
         }
-        .modelContainer(for: [Vehicle.self, ServiceProvider.self, ServiceItem.self, ServiceVisit.self])
+        .modelContainer(for: [
+            Vehicle.self,
+            ServiceProvider.self,
+            ServiceItem.self,
+            SavedServiceItem.self,
+            ServiceVisit.self,
+            RefuelStation.self,
+            RefuelVisit.self])
         
     }
 }

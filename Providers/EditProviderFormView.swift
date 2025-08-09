@@ -21,11 +21,11 @@ struct EditProviderFormView: View {
             Form {
                 HStack {
                     Text("Name: ")
-                    TextField("Provider Name", text: $name)
+                    TextField("", text: $name)
                 }
                 HStack {
-                    Text("Info: ")
-                    TextField("Contact Info", text: $contact)
+                    Text("Contact Info: ")
+                    TextField("", text: $contact)
                 }
             }
             .navigationTitle("Edit Provider")

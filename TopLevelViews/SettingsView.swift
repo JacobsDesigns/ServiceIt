@@ -26,6 +26,7 @@ struct SettingsView: View {
     @Query(sort: \ServiceItem.name) var serviceItems: [ServiceItem]
     @Query(sort: \RefuelStation.name) var refuelStations: [RefuelStation]
     @Query var allVisits: [ServiceVisit]
+    @Query var allRefuels: [RefuelVisit]
 
     // Sheet & Alert State
     @State private var showingAddVehicle = false
@@ -174,17 +175,7 @@ struct SettingsView: View {
                     
                 }
                 
-                //            .sheet(item: $exportedFile) { file in
-                //                VStack(spacing: 20) {
-                //                    ShareLink(item: file.url) {
-                //                        Label("Share Exported CSV", systemImage: "square.and.arrow.up")
-                //                    }
-                //                    Button("Done") {
-                //                        exportedFile = nil
-                //                    }
-                //                }
-                //                .padding()
-                //            }
+
                 
                 
                 .fileImporter(
@@ -218,8 +209,6 @@ struct SettingsView: View {
             }
             
         }//end of ZStack
-        
-
         
     }// end of view
 
@@ -344,7 +333,7 @@ struct SettingsView: View {
     
     var dataManagementSection: some View {
         Section("Data Management") {
-            Button("Export Service Records") {
+            Button("Export Records") {
                 showShareLink = false
                 showExporter = true
                 exportCSV()
@@ -358,63 +347,28 @@ struct SettingsView: View {
 
     // MARK: - Import & Export Helpers
 
-//    private func exportCSV() {
-//        let imageDirectory = URL.documentsDirectory.appendingPathComponent("ExportedImages")
-//
-//        // Ensure ExportedImages folder exists
-//        if !FileManager.default.fileExists(atPath: imageDirectory.path) {
-//            try? FileManager.default.createDirectory(at: imageDirectory, withIntermediateDirectories: true)
-//        }
-//
-//        let filename = "service_export.csv"
-//        let csvURL = URL.documentsDirectory.appendingPathComponent(filename)
-//        let zipURL = URL.documentsDirectory.appendingPathComponent("service_export.zip")
-//
-//        // Generate CSV content
-//        let csv = generateCSV(from: allVisits, imageDirectory: imageDirectory)
-//
-//        do {
-//            // Write CSV
-//            try csv.write(to: csvURL, atomically: true, encoding: .utf8)
-//
-//            // Collect files: CSV + Images
-//            var filesToZip: [URL] = [csvURL]
-//            if let imageFiles = try? FileManager.default.contentsOfDirectory(at: imageDirectory, includingPropertiesForKeys: nil) {
-//                filesToZip.append(contentsOf: imageFiles)
-//            }
-//
-//             //Create ZIP archive
-//            try FileManager.default.zipItem(
-//                at: csvURL.deletingLastPathComponent(), // directory containing the files
-//                to: zipURL,
-//                shouldKeepParent: false
-//            )
-//
-//             //Update exported file reference if needed
-//            if FileManager.default.fileExists(atPath: zipURL.path) {
-//                exportedFile = ExportedFile(url: zipURL)
-//                print("✅ ZIP export successful at: \(zipURL.path)")
-//            } else {
-//                print("⚠️ ZIP file not found after creation")
-//            }
-//
-//        } catch {
-//            print("❌ Export failed: \(error)")
-//        }
-//    }
 
     private func exportCSV() {
-        let filename = "service_export.csv"
-        let csvURL = URL.documentsDirectory.appendingPathComponent(filename)
+        let serviceFilename = "service_export.csv"
+        let refuelFileName = "refuel_export.csv"
+        let serviceCSVURL = URL.documentsDirectory.appendingPathComponent(serviceFilename)
+        let refuelCSVURL = URL.documentsDirectory.appendingPathComponent(refuelFileName)
 
         // Generate CSV content (passing a dummy imageDirectory since it's unused)
-        let csv = generateCSV(from: allVisits, imageDirectory: URL(fileURLWithPath: "/dev/null"))
+        let serviceCSV = generateCSV(from: allVisits, imageDirectory: URL(fileURLWithPath: "/dev/null"))
+        let refuelCSV = generateRefuelCSV(from: allRefuels)
 
         do {
-            try csv.write(to: csvURL, atomically: true, encoding: .utf8)
-            print("✅ CSV export successful at: \(csvURL.path)")
+            try serviceCSV.write(to: serviceCSVURL, atomically: true, encoding: .utf8)
+            print("Service CSV export successful at: \(serviceCSVURL.path)")
         } catch {
-            print("❌ Export failed: \(error)")
+            print("Service Export failed: \(error)")
+        }
+        do {
+            try refuelCSV.write(to: refuelCSVURL, atomically: true, encoding: .utf8)
+            print("Refuel CSV export successful at: \(refuelCSVURL.path)")
+        } catch {
+            print("Refuel Export failed: \(error)")
         }
     }
 
@@ -464,7 +418,7 @@ struct SettingsView: View {
                     imageFilename = filename
                 } catch {
                     print("❌ Failed to save image for \(vehicle.name): \(error)")
-                    imageFilename = "" // fallback
+                    imageFilename = "404 file not found" // fallback
                 }
             }
 
@@ -476,6 +430,41 @@ struct SettingsView: View {
         return lines.joined(separator: "\n")
     }
 
+    private func generateRefuelCSV(from records: [RefuelVisit]) -> String {
+        print("total records received: \(records.count)")
+        
+        var lines = ["Odometer,Date,Gallons,costPerGallon,Total,Carwash,CarWashCost,Vehicle,RefuleStation,StationLocation"]
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        
+        for record in records {
+            
+            guard let vehicle = record.vehicle,
+                  let refuelStation = record.refuelStation,
+                  isValid(vehicle), isValid(refuelStation) else {
+                print("⚠️ Skipping invalid record: \(record)")
+                continue
+            }
+            
+            let odometer = "\(record.odometer)"
+            let date = formatter.string(from: record.date)
+            let gallons = record.gallons
+            let costPerGallon = String(format: "%.2f", record.costPerGallon)
+            let total = record.total
+            let carWash = record.addedCarWash
+            let carWashCost = String(format: "%.2f", record.carWashCost ?? "")
+            let vehicleName = vehicle.name
+            let refuelStationName = refuelStation.name
+            let refuelStationLocation = refuelStation.location
+            
+            lines.append("\(odometer),\(date),\(gallons),\(costPerGallon),\(total),\(carWash),\(carWashCost),\(vehicleName),\(refuelStationName),\(refuelStationLocation)")
+            
+        }
+        
+        return lines.joined(separator: "\n")
+        
+    }
+    
     private func isValid<T: PersistentModel>(_ model: T) -> Bool {
         let id = model.persistentModelID
         let descriptor = FetchDescriptor<T>(
@@ -738,7 +727,8 @@ struct SettingsView: View {
             let license = fields[9]
             let suggestedMileage = Int(fields[10]) ?? 0
             let imageFilename = fields[11]
-            
+            let tax = Double(fields[12]) ?? 0.0
+            let total = Double(fields[13]) ?? 0.0
             
             
             let imageDirectory = URL.documentsDirectory.appendingPathComponent("ExportedImages")
@@ -800,15 +790,16 @@ struct SettingsView: View {
                 }()
 
             // 📝 Final Record
-//            let record = ServiceVisit(
-//                vehicle: vehicle,
-//                type: type,
-//                cost: cost,
-//                date: date,
-//                mileage: mileage
-//            )
-//            record.provider = provider
-//            modelContext.insert(record)
+            let record = ServiceVisit(
+                date: date,
+                mileage: mileage,
+                cost: cost,
+                tax: tax,
+                total: total,
+                savedItems: []
+            )
+            record.provider = provider
+            modelContext.insert(record)
         }
 
         do {

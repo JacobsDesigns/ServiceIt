@@ -8,8 +8,6 @@ import SwiftData
 import SwiftUI
 import Foundation
 
-
-
 struct ServiceSummarySection: View {
     var records: [ServiceVisit]
 

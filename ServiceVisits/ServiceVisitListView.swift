@@ -76,17 +76,25 @@ struct ServiceVisitListView: View {
         }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    showVehicleDetails = true
-                } label: {
-                    Label("Edit", systemImage: "pencil")
+                Button (action: {showVehicleDetails = true}){
+                    HStack{
+                        Image(systemName: "car.badge.gearshape.fill")
+                        Text("Edit")
+                    }
+                    //showVehicleDetails = true
+                //} label: {
+                    
+//                    Label("Edit", systemImage: "pencil")
                 }
             }
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    showingAddRecord = true
-                } label: {
-                    Label("Add Record", systemImage: "wrench.and.screwdriver")
+                Button (action: {showingAddRecord = true}){
+                    HStack{
+                        Image(systemName: "plus")
+                        Text("Add Record")
+                    }
+                //label: {
+                    //Label("Add Record", systemImage: "wrench.and.screwdriver")
                 }
             }
 
