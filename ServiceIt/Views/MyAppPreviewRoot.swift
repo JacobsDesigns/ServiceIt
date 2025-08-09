@@ -16,16 +16,16 @@ struct MyAppPreviewRoot: View {
                 }
             AllVisitsView()
                 .tabItem {
-                    Label("Records", systemImage: "list.bullet")
+                    Label("Records", systemImage: "doc.text")
                 }
-            AllRefuelsView() // Optional tab
+            AllRefuelsView()
             
                 .tabItem {
                     Label("Refuel", systemImage: "fuelpump.and.filter")
                 }
             ServiceScheduleView()
                 .tabItem {
-                    Label("Schedule", systemImage: "calendar")
+                    Label("Summaries", systemImage: "chart.bar")
                 }
             SettingsView()
                 .tabItem {

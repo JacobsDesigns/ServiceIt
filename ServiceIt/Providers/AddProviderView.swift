@@ -18,8 +18,14 @@ struct AddProviderView: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("Provider Name", text: $name)
-                    TextField("Contact Info", text: $contactInfo)
+                    HStack {
+                        Text("Name: ")
+                        TextField("", text: $name)
+                    }
+                    HStack {
+                        Text("Contact Info: ")
+                        TextField("", text: $contactInfo)
+                    }
                 }
 
             }

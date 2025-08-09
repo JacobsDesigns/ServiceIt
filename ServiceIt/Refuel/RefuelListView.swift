@@ -105,20 +105,25 @@ struct RefuelListView: View {
         }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    showVehicleDetails = true
-                } label: {
-                    Label("Edit", systemImage: "pencil")
+                Button (action: {showVehicleDetails = true}){
+                    // label: {
+                    //Label("Edit", systemImage: "pencil")
+                    HStack {
+                        Image(systemName: "car.badge.gearshape.fill")
+                        Text("Edit")
+                    }
                 }
             }
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    showAddRefuelVisit = true
-                } label: {
-                    Label("Add Refuel", systemImage: "fuelpump")
+                Button (action: {showAddRefuelVisit = true}){
+                //label: {
+                  //  Label("Add Refuel", systemImage: "fuelpump")
+                    HStack {
+                        Image(systemName: "fuelpump")
+                        Text("Add Refuel")
+                    }
                 }
             }
-
         }
         .sheet(item: $recordToEdit){ visit in
             RefuelVistFormView(vehicle: vehicle, refuelVisitToEdit: visit)

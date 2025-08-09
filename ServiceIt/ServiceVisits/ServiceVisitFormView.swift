@@ -139,12 +139,12 @@ struct ServiceVisitFormView: View {
                         Button("Attach Photo") {
                             showImagePicker = true
                         }
-                        .buttonStyle(BorderedButtonStyle())
+                        .buttonStyle(.bordered)
                         Spacer()
                         Button("Delete Photo") {
                                 image = nil
                         }
-                        .buttonStyle(BorderedButtonStyle())
+                        .buttonStyle(.bordered)
                     }
                 }
                 .fullScreenCover(isPresented: $showFullScreenViewer) {
@@ -163,14 +163,12 @@ struct ServiceVisitFormView: View {
                         Button("Add Item"){
                             showAddItemSheet = true
                         }
-                        .buttonStyle(BorderedButtonStyle())
-//                        .frame (width: buttonWidth)
+                        .buttonStyle(.bordered)
                         Spacer()
                         Button("Add Provider"){
                             showAddProviderSheet = true
                         }
-                        .buttonStyle(BorderedButtonStyle())
-//                        .frame (width: buttonWidth)
+                        .buttonStyle(.bordered)
                     }
                 }
                 
@@ -181,19 +179,25 @@ struct ServiceVisitFormView: View {
                         Button("Delete Visit", role: .destructive) {
                             showDeleteAlert = true
                         }
-                        .buttonStyle(BorderedButtonStyle())
+                        .buttonStyle(.bordered)
                     }
                 }
                 
                 
             }
-            .navigationTitle(visitToEdit == nil ? "New Visit" : "Edit Visit")
+            .navigationTitle(visitToEdit == nil ? "New Service Visit" : "Edit Visit")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .topBarLeading) {
-                    Button(visitToEdit == nil ? "Add Visit" : "Save Changes") { saveVisit() }
+//                    Button(visitToEdit == nil ? "Add Service Visit" : "Save Changes") { saveVisit() }
+                    Button(action: saveVisit){
+                        HStack{
+                            Image(systemName: visitToEdit == nil ? "plus" : "internaldrive.fill")
+                            Text(visitToEdit == nil ? "Add Service Visit" : "Save Changes")
+                        }
+                    }
                         .disabled(
                             selectedVehicle == nil ||
                             selectedProvider == nil ||
@@ -233,9 +237,9 @@ struct ServiceVisitFormView: View {
 
             .alert("Delete Visit?", isPresented: $showDeleteAlert) {
                 Button("Delete", role: .destructive) { deleteVisit(); dismiss() }
-                    .buttonStyle(BorderedButtonStyle())
+                    .buttonStyle(.bordered)
                 Button("Cancel", role: .cancel) {}
-                    .buttonStyle(BorderedButtonStyle())
+                    .buttonStyle(.bordered)
             } message: {
                 Text("This action cannot be undone.")
             }
@@ -290,7 +294,7 @@ struct ServiceVisitFormView: View {
                     if let mileage = selectedVehicle?.currentMileage {
                         self.mileage = formatMileage(mileage)
                     }
-                }
+                }.buttonStyle(.bordered)
             }
             
             DatePicker("Date", selection: $date, displayedComponents: .date)

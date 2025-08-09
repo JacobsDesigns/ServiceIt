@@ -31,7 +31,7 @@ struct EditVehicleView: View {
                     
                     HStack {
                         Text("Name: ")
-                        TextField("Name", text: $vehicle.name)
+                        TextField("", text: $vehicle.name)
                     }
 //                        .focused($isFocused, equals: .first)
 //                        .background(DoneToolbar {
@@ -40,7 +40,7 @@ struct EditVehicleView: View {
                     
                     HStack {
                         Text("VIN: ")
-                        TextField("VIN", text: $vehicle.vin)
+                        TextField("", text: $vehicle.vin)
                     }
 //                        .focused($isFocused, equals: .second)
 //                        .background(DoneToolbar {
@@ -49,7 +49,7 @@ struct EditVehicleView: View {
                     
                     HStack {
                         Text("License Plate: ")
-                        TextField("License Plate", text: $vehicle.license)
+                        TextField("", text: $vehicle.license)
                     }
 //                        .focused($isFocused, equals: .third)
 //                        .background(DoneToolbar {
@@ -57,8 +57,8 @@ struct EditVehicleView: View {
 //                        })
                     
                     HStack {
-                        Text("Year: ")
-                        TextField("Model Year", text: Binding(get: {String(vehicle.modelYear)},
+                        Text("Model Year: ")
+                        TextField("", text: Binding(get: {String(vehicle.modelYear)},
                                                               set: {vehicle.modelYear = Int($0) ?? vehicle.modelYear}))
                         .keyboardType(.numberPad)
                         .focused($isFocused, equals: .year)
@@ -69,7 +69,7 @@ struct EditVehicleView: View {
                     
                     HStack {
                         Text("Mileage: ")
-                        TextField("Current Mileage", value: $vehicle.currentMileage, format: .number)
+                        TextField("", value: $vehicle.currentMileage, format: .number)
                             .keyboardType(.numberPad)
                             .focused($isFocused, equals: .mileage)
                             .background(DoneToolbar {
@@ -112,7 +112,9 @@ struct EditVehicleView: View {
                     try? modelContext.save()
                         dismiss()
                     }
+                    .disabled(vehicle.name.isEmpty || vehicle.modelYear == 0 || vehicle.currentMileage == 0)
                 }
+                
 //                ToolbarItemGroup(placement: .keyboard){
 //                    Spacer()
 //                    Button("Done"){

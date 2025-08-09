@@ -13,7 +13,7 @@ struct PredictiveInsightsSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Cost by Year")
+            Text("Service Costs by Year")
                 .font(.title3)
                 .bold()
 
@@ -45,7 +45,6 @@ struct PredictiveInsightsSection: View {
             .frame(height: 200)
         }
         .padding()
-        //.frame(maxWidth: .infinity)
     }
 }
 
