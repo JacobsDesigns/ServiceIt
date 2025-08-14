@@ -8,11 +8,16 @@ import SwiftUI
 import SwiftData
 
 struct GarageView: View {
+    
+    @Environment(\.modelContext) private var modelContext
     @Query var vehicles: [Vehicle]
     @State private var showingAddVehicleForm = false
     @State private var sortOption: RecordSortOption = .dateDescending
     @State private var longPressedVehicle: Vehicle?
-
+    @State private var tempOdometer: String = ""
+    @State private var showAddItemOverlay = false
+    @State private var showAddRefuelVisit = false
+    
     var body: some View {
         NavigationStack {
             VStack {
@@ -35,6 +40,7 @@ struct GarageView: View {
                                     VehicleSummaryCard(vehicle: vehicle)
                                         .onLongPressGesture {
                                             longPressedVehicle = vehicle
+                                            showAddItemOverlay = true
                                         }
                                 }
                                 .buttonStyle(.plain)
@@ -61,11 +67,59 @@ struct GarageView: View {
             .sheet(isPresented: $showingAddVehicleForm) {
                 AddVehicleView()
             }
-            .sheet(item: $longPressedVehicle) { vehicle in
-                EditVehicleView(vehicle: vehicle) // Replace with your actual sheet view
-            }
+//            .sheet(item: $longPressedVehicle) { vehicle in
+//                RefuelVistFormView(vehicle: vehicle)
+//            }
+//            .sheet(item: $longPressedVehicle) { vehicle in
+//                EditVehicleView(vehicle: vehicle)
+//            }
+//                    .presentationDetents([.medium, .large])
+//                    .presentationDragIndicator(.automatic)
+            
 
         }
+        .overlay(
+            Group {
+                if showAddItemOverlay {
+                    ZStack {
+                        Color.black.opacity(0.64)
+                            .ignoresSafeArea()
+                        VStack(spacing: 20) {
+                            Text("Update Odometer ")
+                                .font(.headline)
+                            TextField("New Odometer Reading", text: $tempOdometer)
+                                .keyboardType(.decimalPad)
+                                .textFieldStyle(.roundedBorder)
+                            HStack {
+                                Button("Cancel") {
+                                    withAnimation {
+                                        showAddItemOverlay = false
+                                    }
+                                }
+                                Spacer()
+                                Button("Save") {
+                                    let trimmedOdometer = tempOdometer.trimmingCharacters(in: .whitespacesAndNewlines)
+                                    guard !trimmedOdometer.isEmpty else { return }
+                                    longPressedVehicle?.currentMileage = Int(trimmedOdometer) ?? 0
+                                    try? modelContext.save()
+                                    withAnimation {
+                                        showAddItemOverlay = false
+                                    }
+                                }
+                                .disabled(tempOdometer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                            }
+                        }
+                       
+                        .padding()
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(12)
+                        .frame(maxWidth: 400)
+                        .shadow(radius: 10)
+                    }
+                    .transition(.opacity)
+                }
+            }
+        )
     }
 }
 

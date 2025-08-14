@@ -126,8 +126,8 @@
             filePath = "ServiceIt/ServiceVisits/ServiceVisitFormView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "408"
-            endingLineNumber = "408"
+            startingLineNumber = "412"
+            endingLineNumber = "412"
             landmarkName = "saveVisit()"
             landmarkType = "7">
          </BreakpointContent>
@@ -142,8 +142,8 @@
             filePath = "ServiceIt/ServiceVisits/ServiceVisitFormView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "222"
-            endingLineNumber = "222"
+            startingLineNumber = "226"
+            endingLineNumber = "226"
             landmarkName = "body"
             landmarkType = "24">
          </BreakpointContent>
@@ -174,8 +174,8 @@
             filePath = "ServiceIt/ServiceVisits/ServiceVisitFormView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "266"
-            endingLineNumber = "266"
+            startingLineNumber = "270"
+            endingLineNumber = "270"
             landmarkName = "visitDetailsSection"
             landmarkType = "24">
          </BreakpointContent>
@@ -190,8 +190,8 @@
             filePath = "ServiceIt/ServiceVisits/ServiceVisitFormView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "418"
-            endingLineNumber = "418"
+            startingLineNumber = "422"
+            endingLineNumber = "422"
             landmarkName = "saveVisit()"
             landmarkType = "7">
          </BreakpointContent>
@@ -206,8 +206,8 @@
             filePath = "ServiceIt/ServiceVisits/ServiceVisitListView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "162"
-            endingLineNumber = "162"
+            startingLineNumber = "158"
+            endingLineNumber = "158"
             landmarkName = "applySearchFilter(to:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -222,8 +222,8 @@
             filePath = "ServiceIt/ServiceVisits/ServiceVisitListView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "146"
-            endingLineNumber = "146"
+            startingLineNumber = "142"
+            endingLineNumber = "142"
             landmarkName = "ServiceVisitListView"
             landmarkType = "21">
          </BreakpointContent>
@@ -238,8 +238,8 @@
             filePath = "ServiceIt/ServiceVisits/ServiceVisitListView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "154"
-            endingLineNumber = "154"
+            startingLineNumber = "150"
+            endingLineNumber = "150"
             landmarkName = "applyYearFilter(to:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -302,8 +302,8 @@
             filePath = "ServiceIt/ServiceVisits/ServiceVisitListView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "135"
-            endingLineNumber = "135"
+            startingLineNumber = "131"
+            endingLineNumber = "131"
             landmarkName = "filteredVisits"
             landmarkType = "24">
          </BreakpointContent>
@@ -318,8 +318,8 @@
             filePath = "ServiceIt/ServiceVisits/ServiceVisitListView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "140"
-            endingLineNumber = "140"
+            startingLineNumber = "136"
+            endingLineNumber = "136"
             landmarkName = "filteredVisits"
             landmarkType = "24">
          </BreakpointContent>
@@ -350,8 +350,8 @@
             filePath = "ServiceIt/ServiceVisits/ServiceVisitFormView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "495"
-            endingLineNumber = "495"
+            startingLineNumber = "499"
+            endingLineNumber = "499"
             landmarkName = "ZoomableImageView"
             landmarkType = "14">
          </BreakpointContent>
@@ -366,8 +366,8 @@
             filePath = "ServiceIt/ServiceVisits/ServiceVisitFormView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "506"
-            endingLineNumber = "506"
+            startingLineNumber = "510"
+            endingLineNumber = "510"
             landmarkName = "body"
             landmarkType = "24">
          </BreakpointContent>
@@ -398,8 +398,8 @@
             filePath = "ServiceIt/Refuel/RefuelVistFormView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "153"
-            endingLineNumber = "153"
+            startingLineNumber = "159"
+            endingLineNumber = "159"
             landmarkName = "loadIfEditing()"
             landmarkType = "7">
          </BreakpointContent>
@@ -430,8 +430,8 @@
             filePath = "ServiceIt/Refuel/RefuelListView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "144"
-            endingLineNumber = "144"
+            startingLineNumber = "140"
+            endingLineNumber = "140"
             landmarkName = "filteredVisits"
             landmarkType = "24">
          </BreakpointContent>
@@ -446,8 +446,8 @@
             filePath = "ServiceIt/Refuel/RefuelListView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "149"
-            endingLineNumber = "149"
+            startingLineNumber = "145"
+            endingLineNumber = "145"
             landmarkName = "filteredVisits"
             landmarkType = "24">
          </BreakpointContent>
@@ -462,8 +462,8 @@
             filePath = "ServiceIt/Refuel/RefuelListView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "156"
-            endingLineNumber = "156"
+            startingLineNumber = "152"
+            endingLineNumber = "152"
             landmarkName = "applyYearFilter(to:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -478,8 +478,8 @@
             filePath = "ServiceIt/Refuel/RefuelListView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "163"
-            endingLineNumber = "163"
+            startingLineNumber = "159"
+            endingLineNumber = "159"
             landmarkName = "applySearchFilter(to:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -542,8 +542,8 @@
             filePath = "ServiceIt/Refuel/RefuelListView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "212"
-            endingLineNumber = "212"
+            startingLineNumber = "208"
+            endingLineNumber = "208"
             landmarkName = "mpgLookup"
             landmarkType = "24">
          </BreakpointContent>
@@ -558,8 +558,8 @@
             filePath = "ServiceIt/Refuel/RefuelListView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "194"
-            endingLineNumber = "194"
+            startingLineNumber = "190"
+            endingLineNumber = "190"
             landmarkName = "visitsWithMPG"
             landmarkType = "24">
          </BreakpointContent>
@@ -590,8 +590,8 @@
             filePath = "ServiceIt/Refuel/RefuelVistFormView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "73"
-            endingLineNumber = "73"
+            startingLineNumber = "76"
+            endingLineNumber = "76"
             landmarkName = "body"
             landmarkType = "24">
          </BreakpointContent>

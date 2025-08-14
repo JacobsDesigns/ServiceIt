@@ -33,7 +33,10 @@ struct RefuelVistFormView: View {
         (Double(gallons) ?? 0.0) * (Double(costPerGallon) ?? 0.0)
     }
     @State private var addedCarWash: Bool = false
-    @State private var carWashCost: Double = 0.0
+    @State private var carWashCost: String = ""
+    var computedGrandTotal: Double {
+        computedTotal + (addedCarWash ? Double(carWashCost) ?? 0.0 : 0.0)
+    }
 
     var mileageTextBinding: Binding<String> {
         Binding<String>(
@@ -101,11 +104,14 @@ struct RefuelVistFormView: View {
 
                     if addedCarWash {
                         VStack {
-                            TextField("Car Wash Cost", value: $carWashCost, format: .currency(code: "USD"))
-                                .keyboardType(.decimalPad)
-                                .padding(.bottom)
+                            HStack {
+                                Text("Car Wash Cost: ")
+                                TextField("", text: $carWashCost)
+                                    .keyboardType(.decimalPad)
+                                    
+                            }.padding(.bottom)
 
-                            Text("Grand Total: $\(String(format: "%.2f", computedTotal + (carWashCost)))")
+                            Text("Grand Total: $\(String(format: "%.2f", computedGrandTotal))")
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     }
@@ -161,7 +167,7 @@ struct RefuelVistFormView: View {
         costPerGallon = String(visit.costPerGallon)
         selectedStation = visit.refuelStation
         addedCarWash = visit.addedCarWash
-        carWashCost = visit.carWashCost ?? 0
+        carWashCost = String(visit.carWashCost ?? 0.0)
     }
     
     private func saveVisit() {
@@ -208,7 +214,7 @@ struct RefuelVistFormView: View {
         visit.refuelStation = selectedStation
         visit.total = computedTotal
         visit.addedCarWash = addedCarWash
-        visit.carWashCost = carWashCost
+        visit.carWashCost = Double(carWashCost) ?? 0.0
         
         do {
             try modelContext.save()
