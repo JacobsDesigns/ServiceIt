@@ -8,6 +8,8 @@ import SwiftUI
 import SwiftData
 
 struct ItemPickerSheet: View {
+    
+    @Environment(\.modelContext) private var modelContext
     let serviceItems: [ServiceItem]
     @Binding var selectedItem: ServiceItem?
     @Binding var costInput: String
@@ -15,37 +17,51 @@ struct ItemPickerSheet: View {
     var visitToEdit: ServiceVisit?
     @Binding var isPresented: Bool
     @FocusState private var isCostFieldFocused: Bool
-
+    
+    @State private var showAddItemOverlay = false
+    @State private var tempName: String = ""
+    @State private var tempCost : String = ""
+    
     var body: some View {
+        
+        let sortedItems = serviceItems.sorted { $0.name < $1.name }
+        
         NavigationStack {
             Form {
-                Section {
-                    Menu {
-                        ForEach(serviceItems) { item in
+                Section(header: Text("Edit Cost if needed")) {
+                    HStack {
+                        Text("$")
+                        TextField("Enter Cost", text: $costInput)
+                            .keyboardType(.decimalPad)
+                            .focused($isCostFieldFocused)
+                    }
+                }
+
+                Section (header: Text("Select a Service Item")) {
+                        ForEach(sortedItems) { item in
                             Button {
                                 selectedItem = item
                                 costInput = String(format: "%.2f", item.cost)
                             } label: {
                                 HStack {
                                     Text(item.name)
-                                    //Spacer()
+                                    Spacer()
                                     Text("\(item.cost, format: .currency(code: "USD"))")
                                 }
-//                                Text("\(item.name) • \(item.cost, format: .currency(code: "USD"))")
-//                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
                             }
                         }
-                    } label: {
-                        Text(selectedItem?.name ?? "Select Service Item")
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
+                Section (header: Text("Add New Service Item")){
+                    Button("Add"){
+                        withAnimation {
+                            showAddItemOverlay = true
+                        }
                     }
                 }
-                
-                Section(header: Text("Enter Cost")) {
-                    TextField("Enter Cost", text: $costInput)
-                        .keyboardType(.decimalPad)
-                        .focused($isCostFieldFocused)
-                }
+
+
             }
             .navigationTitle("Add Item")
             .toolbar {
@@ -62,7 +78,6 @@ struct ItemPickerSheet: View {
                         isPresented = false
                     }
                 }
-
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Confirm") {
                         guard let item = selectedItem else {
@@ -97,8 +112,57 @@ struct ItemPickerSheet: View {
 
             }
         }
+        .overlay(
+            Group {
+                if showAddItemOverlay {
+                    ZStack {
+                        Color.black.opacity(0.4)
+                            .ignoresSafeArea()
+                        VStack(spacing: 20) {
+                            Text("Add New Service Item")
+                                .font(.headline)
+                            TextField("Name", text: $tempName)
+                                .textFieldStyle(.roundedBorder)
+                            TextField("Cost", text: $tempCost)
+                                .keyboardType(.decimalPad)
+                                .textFieldStyle(.roundedBorder)
+                            HStack {
+                                Button("Cancel") {
+                                    withAnimation {
+                                        showAddItemOverlay = false
+                                    }
+                                }
+                                Spacer()
+                                Button("Save") {
+                                    let trimmedName = tempName.trimmingCharacters(in: .whitespacesAndNewlines)
+                                    let trimmedCost = tempCost.trimmingCharacters(in: .whitespacesAndNewlines)
+                                    
+                                    guard !trimmedName.isEmpty else { return }
+                                    
+                                    let newItem = ServiceItem(name: trimmedName, cost: Double(trimmedCost) ?? 0)
+                                    modelContext.insert(newItem)
+                                    try? modelContext.save()
+                                    withAnimation {
+                                        showAddItemOverlay = false
+                                    }
+                                }
+                                .disabled(tempName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                            }
+                        }
+                        .padding()
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(12)
+                        .frame(maxWidth: 400)
+                        .shadow(radius: 10)
+                    }
+                    .transition(.opacity)
+                }
+            }
+        )
     }
+    
 }
+
 #Preview {
     struct PreviewWrapper: View {
         @State private var selectedItem: ServiceItem? = nil

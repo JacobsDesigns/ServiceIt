@@ -214,9 +214,13 @@ struct ServiceVisitFormView: View {
 //            }
             .sheet(isPresented: $showAddItemSheet) {
                 AddServiceItemView()
+                    .presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.automatic)
             }
             .sheet(isPresented: $showAddProviderSheet){
                 AddProviderView()
+                    .presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.automatic)
             }
             .sheet(item: $itemToEdit) { item in
                 EditItemSheet(

@@ -104,20 +104,16 @@ struct RefuelListView: View {
             }
         }
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button (action: {showVehicleDetails = true}){
-                    // label: {
-                    //Label("Edit", systemImage: "pencil")
-                    HStack {
-                        Image(systemName: "car.badge.gearshape.fill")
-                        Text("Edit")
-                    }
-                }
-            }
+//            ToolbarItem(placement: .navigationBarTrailing) {
+//                Button (action: {showVehicleDetails = true}){
+//                    HStack {
+//                        Image(systemName: "car.badge.gearshape.fill")
+//                        Text("Edit")
+//                    }
+//                }
+//            }
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button (action: {showAddRefuelVisit = true}){
-                //label: {
-                  //  Label("Add Refuel", systemImage: "fuelpump")
                     HStack {
                         Image(systemName: "fuelpump")
                         Text("Add Refuel")
