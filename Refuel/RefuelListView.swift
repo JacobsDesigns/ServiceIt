@@ -31,10 +31,20 @@ struct RefuelListView: View {
                     Button {
                         recordToEdit = visit
                     } label: {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("Fuel Cost: \(visit.total, format: .currency(code: "USD"))")
-                                .foregroundColor(.gray)
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            
+                            HStack(spacing: 4) {
+                                Text("Fuel: \(visit.total, format: .currency(code: "USD"))")
                                 
+                                Spacer()
+                                
+                                if visit.addedCarWash {
+                                    Text(" with Wash: \((visit.total + (visit.carWashCost ?? 0)), format: .currency(code: "USD"))")
+                                }
+                            }
+                            .foregroundColor(.gray)
+                            
                             HStack {
                                 if let mpg = mpg {
                                     Text("MPG: \(String(format: "%.2f", mpg))")
@@ -50,68 +60,60 @@ struct RefuelListView: View {
                                         .foregroundColor(.gray)
                             }
                             .font(.caption)
-
+                            .foregroundColor(.gray)
 
                             Divider()
 
                             HStack {
                                 Text(visit.refuelStation?.name ?? "Unknown Provider")
                                 Text(visit.refuelStation?.location ?? "")
+                                Spacer()
+                                Text("Fuel Cost: ")
+                                Text(visit.costPerGallon, format: .currency(code: "USD")).font(.caption)
                             }
-                            .font(.footnote)
-                            .italic()
-                            .foregroundColor(.secondary)
+                            .font(.caption)
+                            .foregroundColor(.gray)
 
                             HStack {
                                 Text(visit.date.formatted(date: .abbreviated, time: .omitted))
                                 Spacer()
                                 Text("Mileage: \(visit.odometer)")
                             }
-                            .font(.footnote)
+                            .font(.caption)
                             .foregroundColor(.gray)
                         }
                     }
                 }
             }
+            
             .listRowSpacing(4)
             .searchable(text: $searchText)
 
             if !filteredVisits.isEmpty {
                 HStack {
-                    //Text("\(vehicle.name)")
+
                     Text("Total Cost")
                         .font(.headline)
                     Spacer()
                     Text(totalCost, format: .currency(code: "USD"))
                         .font(.headline)
-                }
-                .padding()
-            }
-            
-            if !filteredVisits.isEmpty {
-                if let avg = averageMPG {
-                    HStack {
-                        Text("Average MPG")
+                    Spacer()
+                    
+                    if let avg = averageMPG {
+           
+                        Text("Avg. MPG")
                             .font(.headline)
                         Spacer()
                         Text(String(format: "%.2f", avg))
                             .font(.headline)
                             .foregroundColor(avg < 20 ? .red : .green)
                     }
-                    .padding(.horizontal)
-                    .padding(.bottom, 8)
                 }
+                .padding(.horizontal)
+                .padding(.bottom, 6)
             }
         }
         .toolbar {
-//            ToolbarItem(placement: .navigationBarTrailing) {
-//                Button (action: {showVehicleDetails = true}){
-//                    HStack {
-//                        Image(systemName: "car.badge.gearshape.fill")
-//                        Text("Edit")
-//                    }
-//                }
-//            }
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button (action: {showAddRefuelVisit = true}){
                     HStack {
@@ -159,8 +161,9 @@ private extension RefuelListView {
         guard !searchText.isEmpty else { return visits }
         return visits.filter {
             let providerMatches = $0.refuelStation?.name.localizedCaseInsensitiveContains(searchText) ?? false
+            let locationMatches = $0.refuelStation?.location.localizedCaseInsensitiveContains(searchText) ?? false
             let yearMatches = String(Calendar.current.component(.year, from: $0.date)).contains(searchText)
-            return providerMatches || yearMatches
+            return providerMatches || locationMatches || yearMatches
         }
     }
 
@@ -176,7 +179,10 @@ private extension RefuelListView {
     }
 
     var totalCost: Decimal {
-        Decimal(filteredVisits.reduce(0) { $0 + $1.total })
+        filteredVisits.reduce(Decimal(0)) { sum, visit in
+            let wash = visit.addedCarWash ? (visit.carWashCost ?? 0) : 0
+            return sum + Decimal(visit.total) + Decimal(wash)
+        }
     }
     
     var averageMPG: Double? {
@@ -232,7 +238,10 @@ private extension RefuelListView {
                     total: (13.5 * 5.39),
                     vehicle: vehicle,
                     refuelStation: RefuelStation(name: "Chevron", location: "")
+                    
                 )
+            visit.addedCarWash = true
+            visit.carWashCost = 9.99
             
             context.insert(vehicle)
             context.insert(visit)
@@ -245,3 +254,4 @@ private extension RefuelListView {
     
     return PreviewWrapper()
 }
+

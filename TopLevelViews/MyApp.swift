@@ -27,7 +27,7 @@ struct MyApp: App {
                     }
                 ServiceScheduleView()
                     .tabItem {
-                        Label("Summeries", systemImage: "chart.bar")
+                        Label("Summaries", systemImage: "chart.bar")
                     }
                 SettingsView()
                     .tabItem {

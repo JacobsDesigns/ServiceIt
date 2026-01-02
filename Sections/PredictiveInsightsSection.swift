@@ -20,29 +20,88 @@ struct PredictiveInsightsSection: View {
             let grouped = Dictionary(grouping: records) { record in
                 Calendar.current.component(.year, from: record.date)
             }
-
             let costByYear = grouped.map { (year, records) in
                 (year: year, total: records.reduce(0) { $0 + $1.cost })
             }
             .sorted { $0.year < $1.year }
 
-            Chart(costByYear, id: \.year) { data in
-                BarMark(
-                    x: .value("Year", "\(data.year)"),
-                    y: .value("Cost", data.total)
-                )
-                .foregroundStyle(.blue)
-                .annotation(position: .top){
-                    Text(data.total, format: .currency(code: "USD"))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+            ScrollView(.horizontal) {
+                Chart(costByYear, id: \.year) { data in
+                    BarMark(
+                        x: .value("Year", "\(data.year)"),
+                        y: .value("Cost", data.total)
+                    )
+                    .foregroundStyle(.blue)
+                    .annotation(position: .top){
+                        Text(data.total, format: .currency(code: "USD"))
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .rotationEffect(.degrees(-90))
+                            .fixedSize()
+                            .offset(x: 0, y: -16)
+                            .padding()
+                    }
+                }.padding()
+                .chartYAxis {
+                    AxisMarks(position: .leading){
+                        AxisValueLabel(format: .currency(code: "USD"))}
                 }
+                .frame(height: 330)
+                .frame(minWidth: max(CGFloat(costByYear.count) * 80, 350))
             }
-            .chartYAxis {
-                AxisMarks(position: .leading){
-                    AxisValueLabel(format: .currency(code: "USD"))}
+        }
+        .padding()
+        
+        VStack (alignment: .leading, spacing: 12)  {
+            Text("Service Costs by Provider")
+                .font(.title3)
+                .bold()
+            
+            let groupedByProvider = Dictionary(grouping: records){ record in
+                record.provider?.name ?? "Unknown"
             }
-            .frame(height: 200)
+            let costByProvider = groupedByProvider.map { (provider, records) in
+                (provider: provider, total: records.reduce(0) { $0 + $1.cost})
+            }
+                .sorted { $0.total > $1.total }
+          
+            ScrollView(.horizontal) {
+                Chart(costByProvider, id: \.provider){ data in
+                    BarMark(
+                        x: .value("Provider", data.provider),
+                        y: .value("Cost", data.total)
+                    )
+                    .foregroundStyle(.blue)
+                    .annotation(position: .top){
+                        Text(data.total, format: .currency(code: "USD"))
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .rotationEffect(.degrees(-90))
+                            .fixedSize()
+                            .offset(x:0, y: -16)
+                            .padding()
+                    }
+                }.padding()
+                .chartYAxis {
+                    AxisMarks (position: .leading) {
+                        AxisValueLabel(format: .currency(code: "USD"))
+                    }
+                }
+                .chartXAxis {
+                    AxisMarks(position: .bottom) { value in
+                        AxisValueLabel() {
+                            if let label = value.as(String.self) {
+                                Text(label)
+                                    .rotationEffect(.degrees(15))
+                                    .fixedSize()
+                                    .padding()
+                            }
+                        }
+                    }
+                }
+                .frame(height: 330)
+                .frame(minWidth: max(CGFloat(costByProvider.count) * 100, 350))
+            }
         }
         .padding()
     }
@@ -55,6 +114,7 @@ struct PredictiveInsightsSection: View {
             date: Calendar.current.date(from: DateComponents(year: 2022, month: 3, day: 15))!,
             mileage: 15000,
             cost: 120.0,
+            tax: 3.89,
             total: 120.0,
             savedItems: []
         ),
@@ -90,7 +150,4 @@ struct PredictiveInsightsSection: View {
 
     PredictiveInsightsSection(records: sampleRecords)
 }
-
-
-
 

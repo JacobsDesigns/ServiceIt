@@ -52,9 +52,9 @@ struct ServiceScheduleView: View {
                         // 🔧 Predictive Maintenance
                         PredictiveInsightsSection(records: vehicleRecords)
                         
-                        Divider()
-
-                        MPGInsightsSection(refuelRecords: allRefuelRecords, selectedVehicle: selectedVehicle)
+//                        Divider()
+//
+//                        MPGInsightsSection(refuelRecords: allRefuelRecords, selectedVehicle: selectedVehicle)
                         
                     } else {
                         Text("Select a vehicle to view its service schedule.")
@@ -65,7 +65,7 @@ struct ServiceScheduleView: View {
                     }
                 }
             }
-            .navigationTitle("Summeries")
+            .navigationTitle("Summaries")
         }
     }
 }
