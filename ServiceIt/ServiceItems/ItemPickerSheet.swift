@@ -28,20 +28,44 @@ struct ItemPickerSheet: View {
         
         NavigationStack {
             Form {
-                Section(header: Text("Edit Cost if needed")) {
-                    HStack {
-                        Text("$")
-                        TextField("Enter Cost", text: $costInput)
-                            .keyboardType(.decimalPad)
-                            .focused($isCostFieldFocused)
-                    }
-                }
+//                Section(header: Text("Edit Cost if needed")) {
+//                    HStack {
+//                        Text("$")
+//                        TextField("Enter Cost", text: $costInput)
+//                            .keyboardType(.decimalPad)
+//                            .focused($isCostFieldFocused)
+//                    }
+//                }
 
                 Section (header: Text("Select a Service Item")) {
                         ForEach(sortedItems) { item in
                             Button {
-                                selectedItem = item
-                                costInput = String(format: "%.2f", item.cost)
+                                // Add immediately on tap, using edited cost if provided
+                                let trimmedCost = costInput.trimmingCharacters(in: .whitespacesAndNewlines)
+                                let cost = Double(trimmedCost) ?? item.cost
+                                let newItem = SavedServiceItem(name: item.name, cost: cost)
+
+                                // Attach to visit if needed
+                                if let visit = visitToEdit {
+                                    newItem.visit = visit
+                                }
+
+                                // Prevent duplicates
+                                let alreadyAdded = addedItems.contains { $0.name == item.name }
+                                guard !alreadyAdded else {
+                                    // Clear state and close
+                                    selectedItem = nil
+                                    costInput = ""
+                                    isPresented = false
+                                    return
+                                }
+
+                                addedItems.append(newItem)
+
+                                // Clear state and close
+                                selectedItem = nil
+                                costInput = ""
+                                isPresented = false
                             } label: {
                                 HStack {
                                     Text(item.name)
@@ -49,12 +73,14 @@ struct ItemPickerSheet: View {
                                     Text("\(item.cost, format: .currency(code: "USD"))")
                                 }
                                     .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(7)
                             }
+                            .buttonStyle(.plain)
                         }
                 }
 
                 Section (header: Text("Add New Service Item")){
-                    Button("Add"){
+                    Button("Add..."){
                         withAnimation {
                             showAddItemOverlay = true
                         }
@@ -78,38 +104,6 @@ struct ItemPickerSheet: View {
                         isPresented = false
                     }
                 }
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Confirm") {
-                        guard let item = selectedItem else {
-                            isPresented = false
-                            return
-                        }
-
-                        let cost = Double(costInput) ?? item.cost
-                        let newItem = SavedServiceItem(name: item.name, cost: cost)
-
-                        // Attach to visit if needed
-                        if let visit = visitToEdit {
-                            newItem.visit = visit
-                        }
-
-                        // Prevent duplicates
-                        let alreadyAdded = addedItems.contains { $0.name == item.name }
-                        guard !alreadyAdded else {
-                            isPresented = false
-                            return
-                        }
-
-                        addedItems.append(newItem)
-
-                        // Clear state
-                        selectedItem = nil
-                        costInput = ""
-                        isPresented = false
-                    }
-
-                }
-
             }
         }
         .overlay(

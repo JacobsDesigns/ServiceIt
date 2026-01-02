@@ -3,6 +3,14 @@
    version = "1.0">
    <ContextStates>
       <ContextState
+         contextName = "SettingsView.unlinkServiceProvider(from:):SettingsView.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "provider.name">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
          contextName = "SettingsView.generateCSV(from:):SettingsView.swift">
          <PersistentStrings>
             <PersistentString
@@ -14,19 +22,19 @@
          contextName = "ServiceVisitFormView.loadVisitIfEditing():ServiceVisitFormView.swift">
          <PersistentStrings>
             <PersistentString
-               value = "savedItems">
+               value = "addedItems">
             </PersistentString>
             <PersistentString
                value = "taxText">
             </PersistentString>
             <PersistentString
-               value = "visit.total">
+               value = "costText">
             </PersistentString>
             <PersistentString
                value = "selectedServiceItems">
             </PersistentString>
             <PersistentString
-               value = "visit.tax">
+               value = "totalText">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
@@ -42,13 +50,10 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
-         contextName = "closure #1 in ServiceVisitFormView.serviceItemSection.getter:ServiceVisitFormView.swift">
+         contextName = "RefuelListView.applyYearFilter(to:):RefuelListView.swift">
          <PersistentStrings>
             <PersistentString
-               value = "pendingItem">
-            </PersistentString>
-            <PersistentString
-               value = "visitToEdit">
+               value = "selectedYear">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
@@ -64,18 +69,21 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
-         contextName = "closure #1 in ServiceVisitListView.body.getter:ServiceVisitListView.swift">
+         contextName = "closure #1 in ServiceVisitFormView.serviceItemSection.getter:ServiceVisitFormView.swift">
          <PersistentStrings>
             <PersistentString
-               value = "searchText">
+               value = "pendingItem">
+            </PersistentString>
+            <PersistentString
+               value = "visitToEdit">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
       <ContextState
-         contextName = "RefuelListView.applyYearFilter(to:):RefuelListView.swift">
+         contextName = "closure #1 in closure #2 in AllRefuelsView.body.getter:AllRefuelsView.swift">
          <PersistentStrings>
             <PersistentString
-               value = "selectedYear">
+               value = "vehicle.name">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
@@ -105,10 +113,10 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
-         contextName = "closure #1 in closure #2 in AllRefuelsView.body.getter:AllRefuelsView.swift">
+         contextName = "closure #1 in ServiceVisitListView.body.getter:ServiceVisitListView.swift">
          <PersistentStrings>
             <PersistentString
-               value = "vehicle.name">
+               value = "searchText">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
@@ -176,17 +184,6 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
-         contextName = "ServiceVisitFormView.saveVisit():ServiceVisitFormView.swift">
-         <PersistentStrings>
-            <PersistentString
-               value = "costText">
-            </PersistentString>
-            <PersistentString
-               value = "mileage">
-            </PersistentString>
-         </PersistentStrings>
-      </ContextState>
-      <ContextState
          contextName = "ServiceVisitFormView.updateTaxIfNeeded():ServiceVisitFormView.swift">
          <PersistentStrings>
             <PersistentString
@@ -197,6 +194,17 @@
             </PersistentString>
             <PersistentString
                value = "Double(cleanedTax)">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "ServiceVisitFormView.saveVisit():ServiceVisitFormView.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "costText">
+            </PersistentString>
+            <PersistentString
+               value = "mileage">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
@@ -241,6 +249,17 @@
             </PersistentString>
             <PersistentString
                value = "Double(costPerGallon)">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "closure #1 in closure #6 in closure #1 in closure #1 in closure #1 in ServiceVisitFormView.body.getter:ServiceVisitFormView.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "costText">
+            </PersistentString>
+            <PersistentString
+               value = "totalCosts">
             </PersistentString>
          </PersistentStrings>
       </ContextState>

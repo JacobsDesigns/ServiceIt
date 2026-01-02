@@ -11,6 +11,8 @@ import SwiftData
 struct ServiceVisitFormView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
+    
+    @FocusState private var focusedField: Field?
 
     var visitToEdit: ServiceVisit? = nil
     var preselectedVehicle: Vehicle? = nil
@@ -24,6 +26,7 @@ struct ServiceVisitFormView: View {
     @State private var selectedServiceItems: Set<SavedServiceItem> = []
     @State private var costText: String = ""
     @State private var taxText: String = ""
+    @State private var discountText: String = ""
     @State private var totalText: String = ""
     @State private var date: Date = .now
     @State private var mileage: String = ""
@@ -43,17 +46,21 @@ struct ServiceVisitFormView: View {
     @State private var settingItem = false
     @State private var pendingItem: ServiceItem? = nil
     @State private var isShowingSheet = false
-    @State private var isShowingEditSheet = false
     @State private var itemToEdit: SavedServiceItem? = nil
     
     let buttonWidth: CGFloat = 180
     @State private var showFullScreenViewer = false
 
+    enum Field {
+        case tax
+        case discount
+        case mileage
+    }
+    
+    
     var body: some View {
         NavigationStack {
             Form {
-                // 🚗 Vehicle Picker
-                //vehiclePickerSection
                 
                 Section() {
                     
@@ -61,9 +68,9 @@ struct ServiceVisitFormView: View {
                     {
                         isShowingSheet = true
                     } label: {
-                        Label("Service Item", systemImage: "plus.app.fill")
+                        Label("Add Service Item", systemImage: "plus.app.fill")
                     }
-                    //.buttonStyle(BorderedButtonStyle())
+                    .buttonStyle(BorderedButtonStyle())
                     .sheet(isPresented: $isShowingSheet) {
                         ItemPickerSheet(
                             serviceItems: serviceItems,
@@ -79,7 +86,6 @@ struct ServiceVisitFormView: View {
                         let item = addedItems[index]
                         Button {
                             itemToEdit = item
-                            isShowingEditSheet = true
                         } label: {
                             HStack {
                                 Text("\(item.name)")
@@ -94,7 +100,6 @@ struct ServiceVisitFormView: View {
                     .onChange (of: addedItems) { _, newValue in
                         let totalCosts = newValue.reduce(0.0) { $0 + $1.cost}
                         costText = totalCosts.formatted(.currency(code: "USD"))
-                        //costText = String(format: "%.2f", totalCosts)
                     }
                     
                     // Subtotal
@@ -108,7 +113,6 @@ struct ServiceVisitFormView: View {
                     }
                 }
                 
-                
                 // 💵 Cost / Mileage / Date
                 visitDetailsSection
                 
@@ -118,8 +122,6 @@ struct ServiceVisitFormView: View {
                         .frame(minHeight: 100)
                 }
                 
-                // 🚗 Vehicle Photo
-                //vehiclePhotoSection
                 
                 // 📷 Image Picker
                 Section {
@@ -160,12 +162,12 @@ struct ServiceVisitFormView: View {
                 // Add Provider and Item
                 Section {
                     HStack {
-                        Button("Add Item"){
+                        Button("Add New Item"){
                             showAddItemSheet = true
                         }
                         .buttonStyle(.bordered)
                         Spacer()
-                        Button("Add Provider"){
+                        Button("Add New Provider"){
                             showAddProviderSheet = true
                         }
                         .buttonStyle(.bordered)
@@ -187,11 +189,44 @@ struct ServiceVisitFormView: View {
             }
             .navigationTitle(visitToEdit == nil ? "New Service Visit" : "Edit Visit")
             .toolbar {
+                ToolbarItemGroup(placement: .keyboard){
+                    Spacer()
+                    Button("Done") {
+                        
+                        if focusedField == .mileage {
+                            let raw = mileage
+                                .trimmingCharacters(in: .whitespacesAndNewlines)
+                                .replacingOccurrences(of: ",", with: "")
+                            if let value = Int(raw) {
+                                mileage = formatMileage(value)
+                            }
+                            
+                        } else if focusedField == .tax {
+                            let raw = taxText
+                                .trimmingCharacters(in: .whitespacesAndNewlines)
+                                .replacingOccurrences(of: ",", with: "")
+                            if let value = Double(raw) {
+                                taxText = formatDollars(value)
+                            }
+                            
+                        } else if focusedField == .discount {
+                            let raw = discountText
+                                .trimmingCharacters(in: .whitespacesAndNewlines)
+                                .replacingOccurrences(of: ",", with: "")
+                            if let value = Double(raw) {
+                                discountText = formatDollars(value)
+                            }
+                            
+                        }
+                        focusedField = nil
+                    }
+                }
+            }
+            .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .topBarLeading) {
-//                    Button(visitToEdit == nil ? "Add Service Visit" : "Save Changes") { saveVisit() }
                     Button(action: saveVisit){
                         HStack{
                             Image(systemName: visitToEdit == nil ? "plus" : "internaldrive.fill")
@@ -209,9 +244,6 @@ struct ServiceVisitFormView: View {
             .sheet(isPresented: $showImagePicker) {
                 ImagePicker(selectedImage: $image)
             }
-//            .sheet(isPresented: $showCamera) {
-//                ImagePicker(selectedImage: $image, sourceType: .camera)
-//            }
             .sheet(isPresented: $showAddItemSheet) {
                 AddServiceItemView()
                     .presentationDetents([.medium, .large])
@@ -229,6 +261,21 @@ struct ServiceVisitFormView: View {
                         if let index = addedItems.firstIndex(where: { $0.id == updatedItem.id }) {
                             addedItems[index] = updatedItem
                         }
+                        // Recalculate subtotal and total
+                        let subtotal = addedItems.reduce(0.0) { $0 + $1.cost }
+                        costText = subtotal.formatted(.currency(code: "USD"))
+                        
+                        let tax = Double(taxText
+                            .trimmingCharacters(in: .whitespacesAndNewlines)
+                            .replacingOccurrences(of: "$", with: "")
+                            .replacingOccurrences(of: ",", with: "")) ?? 0.0
+                        
+                        let discount = Double(discountText
+                            .trimmingCharacters(in: .whitespacesAndNewlines)
+                            .replacingOccurrences(of: "$", with: "")
+                            .replacingOccurrences(of: ",", with: "")) ?? 0.0
+                        
+                        totalText = ((subtotal + tax) - discount).formatted(.currency(code: "USD"))
                         itemToEdit = nil
                     },
                     onCancel: {
@@ -253,6 +300,44 @@ struct ServiceVisitFormView: View {
     var visitDetailsSection : some View {
         
         Section(header: Text("Visit Details")) {
+
+            Section() {
+                Grid(alignment: .leading, horizontalSpacing: 8, verticalSpacing: 8) {
+                    GridRow {
+                        Text("Tax:")
+                        TextField("", text: $taxText)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.decimalPad)
+                            .focused($focusedField, equals: .tax)
+                            .multilineTextAlignment(.trailing)
+                            .gridColumnAlignment(.trailing)
+                            .onChange (of: taxText){
+                                updateTaxIfNeeded()
+                            }
+                        // make this entire column trailing
+                    }
+                    GridRow{
+                        Text("Discount:")
+                        TextField("", text: $discountText)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.decimalPad)
+                            .focused($focusedField, equals: .discount)
+                            .multilineTextAlignment(.trailing)
+                            .gridColumnAlignment(.trailing)
+                            .onChange (of: discountText){
+                                updateTaxIfNeeded()
+                            }
+                    }
+                    GridRow {
+                        Text("Cost for all Items:")
+                        Text(costText)
+                    }
+                    GridRow {
+                        Text("Grand Total").bold()
+                        Text(totalText).bold()
+                    }
+                }
+            }
             
             Picker("Provider", selection: $selectedProvider) {
                 Text("Select Provider").tag(nil as ServiceProvider?)
@@ -262,38 +347,11 @@ struct ServiceVisitFormView: View {
             }
             
             HStack {
-                Text("Tax: ")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-                Spacer()
-                TextField("", text: $taxText)
-                    .keyboardType(.decimalPad)
-                    .frame(width: 85, alignment: .trailing)
-                    .onChange (of: taxText) {
-                        updateTaxIfNeeded()
-                    }
-            }
-            HStack {
-                Text("Cost for all Items:")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-                Spacer()
-                Text("\(costText)")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-            }
-            HStack {
-                Text("Grand Total")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-                Spacer()
-                Text("\(totalText)")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-            }
-            HStack {
                 TextField("Mileage", text: $mileage)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
                     .keyboardType(.numberPad)
+                    .focused($focusedField, equals: .mileage)
+                
                 Button("Use Current"){
                     if let mileage = selectedVehicle?.currentMileage {
                         self.mileage = formatMileage(mileage)
@@ -348,16 +406,23 @@ struct ServiceVisitFormView: View {
         selectedProvider = visit.provider
         selectedServiceItems = Set(visit.savedItems)
         addedItems = visit.savedItems.sorted { $0.name < $1.name }
-        costText = formatter.string(from: NSNumber(value: visit.cost)) ?? ""
+
+        var itemTotal: Double = 0.0
+        for item in addedItems {
+            itemTotal += item.cost
+        }
+
+        costText = formatter.string(from: NSNumber(value: itemTotal)) ?? ""
         taxText = formatter.string(from: NSNumber(value: visit.tax ?? 0.0)) ?? ""
-        totalText = formatter.string(from: NSNumber(value: visit.total)) ?? ""
-        mileage = formatMileage(visit.mileage)//"\(visit.mileage)"
+        discountText = formatter.string(from: NSNumber(value: visit.discount ?? 0.0)) ?? ""
+        totalText = formatter.string(from: NSNumber(value: itemTotal + (visit.tax ?? 0.0) - (visit.discount ?? 0.0))) ?? ""
+        mileage = formatMileage(visit.mileage)
         notes = visit.notes ?? ""
         image = visit.photoData.flatMap(UIImage.init(data:))
         date = visit.date
     }
 
-    func cleanedMileageText(_ cost: String) -> Int? {
+    private func cleanedMileageText(_ cost: String) -> Int? {
         let output = cost
         .trimmingCharacters(in: .whitespacesAndNewlines)
         .replacingOccurrences(of: "$", with: "")
@@ -365,10 +430,11 @@ struct ServiceVisitFormView: View {
         return Int(output)
     }
     
-    func updateTaxIfNeeded () {
+    private func updateTaxIfNeeded () {
         
         let numberFormatter = NumberFormatter()
-        numberFormatter.numberStyle = .decimal
+        numberFormatter.numberStyle = .currency
+        numberFormatter.currencyCode = "USD"
         
         let cleanedCost = costText
             .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -380,9 +446,15 @@ struct ServiceVisitFormView: View {
             .replacingOccurrences(of: "$", with: "")
             .replacingOccurrences(of: ",", with: "")
         
+        let cleanedDiscount = discountText
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "$", with: "")
+            .replacingOccurrences(of: ",", with: "")
+        
         if let cleanedCost = Double(cleanedCost) {
             let cleanedTax = Double(cleanedTax) ?? 0.0
-            let totalTemp = cleanedCost + cleanedTax
+            let cleanedDiscount = Double(cleanedDiscount) ?? 0.0
+            let totalTemp = cleanedCost + cleanedTax - cleanedDiscount
             totalText = numberFormatter.string(from: NSNumber(value: totalTemp)) ?? "\(totalTemp)"
         }
         
@@ -407,6 +479,11 @@ struct ServiceVisitFormView: View {
             .replacingOccurrences(of: ",", with: "")
             .replacingOccurrences(of: ".", with: "")
         
+        let cleanedDiscount = discountText
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "$", with: "")
+            .replacingOccurrences(of: ",", with: "")
+        
         guard
             
             let vehicle = selectedVehicle,
@@ -421,7 +498,8 @@ struct ServiceVisitFormView: View {
 
         let visit: ServiceVisit
         let tax = Double(cleanedTax)
-        let totalCostWithTax = cost + (tax ?? 0.0)
+        let discount = Double(cleanedDiscount)
+        let totalCostWithTax = cost + (tax ?? 0.0) - (discount ?? 0.0)
         
         if let existingVisit = visitToEdit {
             visit = existingVisit
@@ -430,6 +508,7 @@ struct ServiceVisitFormView: View {
                                  mileage: mileageValue,
                                  cost: cost,
                                  tax : tax,
+                                 discount: discount,
                                  total: totalCostWithTax,
                                  notes: notes,
                                  photoData: image?.jpegData(compressionQuality: 0.8),
@@ -444,6 +523,7 @@ struct ServiceVisitFormView: View {
         visit.mileage = mileageValue
         visit.cost = cost
         visit.tax = tax
+        visit.discount = discount
         visit.total = totalCostWithTax
         visit.notes = notes
         visit.photoData = image?.jpegData(compressionQuality: 0.8)
@@ -473,10 +553,18 @@ struct ServiceVisitFormView: View {
         try? modelContext.save()
     }
     
-    func formatMileage(_ mileage: Int) -> String {
+    private func formatMileage(_ mileage: Int) -> String {
         let numberFormatter = NumberFormatter()
         numberFormatter.numberStyle = .decimal
         return numberFormatter.string(from: NSNumber(value: mileage)) ?? "\(mileage)"
+    }
+    
+    private func formatDollars(_ amount: Double) -> String {
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = .currency
+        numberFormatter.currencyCode = "USD"
+        numberFormatter.string(from: NSNumber(value: amount))
+        return "$\(amount)"
     }
 
     

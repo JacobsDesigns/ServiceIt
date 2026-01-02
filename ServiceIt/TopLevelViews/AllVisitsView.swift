@@ -75,10 +75,25 @@ struct AllVisitsView: View {
                 }
             Spacer()
             .navigationTitle("Service Records")
+            // Auto-select logic
+            .onAppear(perform: autoSelectIfSingle)
+            .onChange(of: allVehicles) { autoSelectIfSingle() }
         }
     }
-        
+
+    private func autoSelectIfSingle() {
+        if allVehicles.count == 1 {
+            selectedVehicle = allVehicles.first
+        } else if let selected = selectedVehicle {
+            // Clear selection if the previously selected vehicle no longer exists
+            let stillExists = allVehicles.contains { $0.persistentModelID == selected.persistentModelID }
+            if !stillExists {
+                selectedVehicle = nil
+            }
+        }
+    }
 }
+
 
 
 

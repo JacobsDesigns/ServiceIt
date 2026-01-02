@@ -40,7 +40,7 @@ struct GarageView: View {
                                     VehicleSummaryCard(vehicle: vehicle)
                                         .onLongPressGesture {
                                             longPressedVehicle = vehicle
-                                            showAddItemOverlay = true
+                                            //showAddItemOverlay = true
                                         }
                                 }
                                 .buttonStyle(.plain)
@@ -70,9 +70,9 @@ struct GarageView: View {
 //            .sheet(item: $longPressedVehicle) { vehicle in
 //                RefuelVistFormView(vehicle: vehicle)
 //            }
-//            .sheet(item: $longPressedVehicle) { vehicle in
-//                EditVehicleView(vehicle: vehicle)
-//            }
+            .sheet(item: $longPressedVehicle) { vehicle in
+                EditVehicleView(vehicle: vehicle)
+            }
 //                    .presentationDetents([.medium, .large])
 //                    .presentationDragIndicator(.automatic)
             
@@ -85,8 +85,11 @@ struct GarageView: View {
                         Color.black.opacity(0.64)
                             .ignoresSafeArea()
                         VStack(spacing: 20) {
-                            Text("Update Odometer ")
+                            HStack {
+                            Text("Update Odometer for ")
+                            Text(longPressedVehicle?.name ?? "Unknown Vehicle")
                                 .font(.headline)
+                        }
                             TextField("New Odometer Reading", text: $tempOdometer)
                                 .keyboardType(.decimalPad)
                                 .textFieldStyle(.roundedBorder)

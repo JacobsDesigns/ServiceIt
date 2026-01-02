@@ -34,32 +34,45 @@ struct ServiceVisitListView: View {
                                 VStack(alignment: .leading, spacing: 2) {
                                     ForEach(visit.savedItems) { item in
                                         Text(item.name)
-                                            .font(.headline)
+                                            .font(.callout)
                                     }
                                 }
                             }
-
-                            Text("Cost: \(visit.total, format: .currency(code: "USD"))")
-                                .foregroundColor(.gray)
-                            //Spacer()
+        
+                            HStack {
+                                Spacer()
+                                Text("Total Cost: \(visit.total, format: .currency(code: "USD"))")
+                                    .foregroundColor(.gray)
+                            }
+                            
                             Divider()
                             Text(visit.provider?.name ?? "Unknown Provider")
-                                .font(.footnote)
+                                .font(.callout)
                                 .italic()
                                 .foregroundColor(.secondary)
                             
-                            HStack {
-                                Text(visit.date.formatted(date: .abbreviated, time: .omitted))
-                                Spacer()
-                                Text("Mileage: \(visit.mileage)")
+                            VStack {
+                                HStack {
+                                    Text(visit.date.formatted(date: .abbreviated, time: .omitted))
+                                    Spacer()
+                                    Text("Mileage: \(visit.mileage)")
+                                }
+                                
+                                .font(.footnote)
+                                .foregroundColor(.gray)
+                                HStack {
+                                    Text("Age: \(timeSinceString(visit.date))")
+                                    Spacer()
+                                    Text("Miles ago: \(milesSince(visit).formatted())")
+                                }
+                                .font(.footnote)
+                                .foregroundColor(.green)
                             }
-                            .font(.footnote)
-                            .foregroundColor(.gray)
                         }
                     }
                 }
             }
-            .listRowSpacing(4)
+            .listRowSpacing(8)
             .searchable(text: $searchText)
 
             if !filteredVisits.isEmpty {
@@ -75,22 +88,14 @@ struct ServiceVisitListView: View {
             }
         }
         .toolbar {
-//            ToolbarItem(placement: .navigationBarLeading) {
-//                Button (action: {showVehicleDetails = true}){
-//                    HStack{
-//                        Image(systemName: "car.badge.gearshape.fill")
-//                        Text("Edit")
-//                    }
-//                }
-//            }
+
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button (action: {showingAddRecord = true}){
                     HStack{
                         Image(systemName: "plus")
                         Text("Add Record")
                     }
-                //label: {
-                    //Label("Add Record", systemImage: "wrench.and.screwdriver")
+
                 }
             }
 
@@ -109,23 +114,40 @@ struct ServiceVisitListView: View {
             RefuelVistFormView(vehicle: vehicle)
         }
         
-//        .onAppear {
-//        for visit in allVisits {
-//            print("--- Visit ---")
-//            print("Vehicle ID: \(String(describing: visit.vehicle?.persistentModelID))")
-//            print("View vehicle ID: \(vehicle.persistentModelID)")
-//            print("Provider exists: \(visit.provider != nil)")
-//            print("Items count: \(visit.savedItems.count)")
-//            print("Filter valid? \(filterValidVisits([visit]).isEmpty ? "❌" : "✅")")
-//            print("Year match? \(applyYearFilter(to: [visit]).isEmpty ? "❌" : "✅")")
-//            print("Search match? \(applySearchFilter(to: [visit]).isEmpty ? "❌" : "✅")")
-//        }
-//    }
 
     }
 }
 
 private extension ServiceVisitListView {
+    
+    func timeSinceString(_ date: Date) -> String {
+        let components = Calendar.current.dateComponents([.year, .month, .day], from: date, to: Date())
+
+        let years = components.year ?? 0
+        let months = components.month ?? 0
+        let days = components.day ?? 0
+
+        var parts: [String] = []
+
+        if years > 0 {
+            parts.append("\(years) yr" + (years == 1 ? "" : "s"))
+        }
+        if months > 0 {
+            parts.append("\(months) mo" + (months == 1 ? "" : "s"))
+        }
+        if days > 0 || parts.isEmpty {   // show days if it's the only unit
+            parts.append("\(days) day" + (days == 1 ? "" : "s"))
+        }
+
+        return parts.joined(separator: ", ")
+    }
+    
+    func milesSince(_ visit: ServiceVisit) -> Int {
+        let current = Int(vehicle.currentMileage)
+        let atVisit = Int(visit.mileage)
+        return current - atVisit
+    }
+    
     
     var filteredVisits: [ServiceVisit] {
         let base = allVisits.filter {
@@ -139,13 +161,6 @@ private extension ServiceVisitListView {
         return sorted
     }
 
-//    func filterValidVisits(_ visits: [ServiceVisit]) -> [ServiceVisit] {
-//        visits.filter {
-//            !$0.savedItems.isEmpty &&
-//            $0.provider != nil &&
-//            $0.vehicle?.persistentModelID == vehicle.persistentModelID
-//        }
-//    }
 
     func applyYearFilter(to visits: [ServiceVisit]) -> [ServiceVisit] {
         guard let year = selectedYear else { return visits }

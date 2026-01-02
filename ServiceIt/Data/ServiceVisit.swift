@@ -13,6 +13,7 @@ class ServiceVisit : Identifiable {
     var mileage: Int
     var cost: Double
     var tax: Double?
+    var discount: Double?
     var total: Double
     var notes: String?
     var photoData: Data?
@@ -21,13 +22,14 @@ class ServiceVisit : Identifiable {
     @Relationship var provider: ServiceProvider?
     @Relationship var savedItems: [SavedServiceItem] = []
 
-    init(date: Date, mileage: Int, cost: Double, tax: Double? = nil, total: Double ,
+    init(date: Date, mileage: Int, cost: Double, tax: Double? = nil, discount: Double? = nil, total: Double ,
          notes: String? = nil, photoData: Data? = nil, vehicle: Vehicle? = nil,
          provider: ServiceProvider? = nil, savedItems: [SavedServiceItem]) {
         self.date = date
         self.mileage = mileage
         self.cost = cost
         self.tax = tax
+        self.discount = discount
         self.total = total
         self.notes = notes
         self.photoData = photoData

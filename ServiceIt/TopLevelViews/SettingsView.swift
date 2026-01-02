@@ -7,7 +7,7 @@
 import SwiftUI
 import SwiftData
 import UniformTypeIdentifiers
-import ZIPFoundation
+//import ZIPFoundation
 
 
 struct ExportedFile: Identifiable {
@@ -53,6 +53,8 @@ struct SettingsView: View {
     @State private var confirmedStationToDelete: RefuelStation?
     @State private var showDeleteStationWarning = false
     
+    @State private var distance: Int = 10
+    @State private var speed: Int = 60
     
     // Import/Export State
     @State private var showImporter = false
@@ -69,6 +71,7 @@ struct SettingsView: View {
                     serviceItemsSection
                     stationsSections
                     dataManagementSection
+                    special
                 }
                 .navigationTitle("Settings")
                 
@@ -102,7 +105,7 @@ struct SettingsView: View {
                         showDeleteItemWarning = false
                     }
                 } message: { type in
-                    Text("This Service Item is still used by existing service records. Deleting it will remove the link.")
+                    Text("This Service Item is still used by existing service records. Deleting it will remove the link and Delete all associated records.")
                 }
                 .deleteAlert(object: $confirmedItemToDelete, title: "Service Type") { type in
                     unlinkServiceType(from: type)
@@ -121,7 +124,7 @@ struct SettingsView: View {
                         showDeleteProviderWarning = false
                     }
                 } message: { provider in
-                    Text("This Service Provider is still used by existing service records. Deleting it will remove the link.")
+                    Text("This Service Provider is still used by existing service records. Deleting it will remove the link and Delete all associated service records.")
                 }
                 .deleteAlert(object: $confirmedProviderToDelete, title: "Service Provider") { provider in
                     unlinkServiceProvider(from: provider)
@@ -333,7 +336,7 @@ struct SettingsView: View {
     
     var dataManagementSection: some View {
         Section("Data Management") {
-            Button("Export Records") {
+            Button("Export Records ... Data Only") {
                 showShareLink = false
                 showExporter = true
                 exportCSV()
@@ -345,17 +348,73 @@ struct SettingsView: View {
         }
     }
 
+    var special: some View {
+        Section(header: Text("Travel Time Calculator")) {
+            HStack(alignment: .top, spacing: 13) {
+                VStack(alignment: .leading) {
+                    Text("Distance (miles)")
+                    Picker("Distance", selection: $distance) {
+                        ForEach(1...500, id: \.self) { value in
+                            Text("\(value)").tag(value)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                    .frame(maxWidth: .infinity, maxHeight: 120)
+                }
+
+                VStack(alignment: .leading) {
+                    Text("Speed (mph)")
+                    Picker("Speed", selection: $speed) {
+                        ForEach(1...120, id: \.self) { value in
+                            Text("\(value)").tag(value)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                    .frame(maxWidth: .infinity, maxHeight: 120)
+                }
+            }
+
+            HStack {
+                Text("Estimated Time...")
+                Spacer()
+                Text(travelTime)
+                    .fontWeight(.bold)
+            }
+
+            Button(role: .destructive) {
+                distance = 10
+                speed = 60
+            } label: {
+                HStack {
+                    Image(systemName: "arrow.counterclockwise")
+                    Text("Reset")
+                }
+            }
+        }
+    }
+    
+    
+    
     // MARK: - Import & Export Helpers
 
+    private var travelTime: String {
+        guard speed > 0 else { return "—" }
+        
+        let time = Double(distance) / Double(speed)
+        let hours = Int(time)
+        let minutes = Int((time - Double(hours)) * 60)
+        return "\(hours)h \(minutes)m"
+    }
 
+    
     private func exportCSV() {
         let serviceFilename = "service_export.csv"
         let refuelFileName = "refuel_export.csv"
         let serviceCSVURL = URL.documentsDirectory.appendingPathComponent(serviceFilename)
         let refuelCSVURL = URL.documentsDirectory.appendingPathComponent(refuelFileName)
 
-        // Generate CSV content (passing a dummy imageDirectory since it's unused)
-        let serviceCSV = generateCSV(from: allVisits, imageDirectory: URL(fileURLWithPath: "/dev/null"))
+        // Generate CSV content
+        let serviceCSV = generateCSV(from: allVisits)
         let refuelCSV = generateRefuelCSV(from: allRefuels)
 
         do {
@@ -373,10 +432,10 @@ struct SettingsView: View {
     }
 
 
-    private func generateCSV(from records: [ServiceVisit], imageDirectory: URL) -> String {
+    private func generateCSV(from records: [ServiceVisit]) -> String {
         print("total records received: \(records.count)")
         
-        var lines = ["date,mileage,cost,items,itemsCost,provider,contactInfo,vehicle,year,vin,license,imageFilename"]
+        var lines = ["date,mileage,cost,tax,discount,items,itemsCost,provider,contactInfo,vehicle,year,vin,license"]
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
 
@@ -395,6 +454,8 @@ struct SettingsView: View {
             let date = formatter.string(from: record.date)
             let mileage = "\(record.mileage)"
             let cost = String(format: "%.2f", record.cost)
+            let tax = record.tax != nil ? String(format: "%.2f", record.tax!) : ""
+            let discount = record.discount != nil ? String(format: "%.2f", record.discount!) : ""
             let items = record.savedItems.map { $0.name }.joined(separator: ";")
             let providerName = provider.name
             let contactInfo = provider.contactInfo
@@ -403,26 +464,8 @@ struct SettingsView: View {
             let vin = vehicle.vin
             let license = vehicle.license
             let itemsCost = record.savedItems.map {String($0.cost)}.joined(separator: ";")
-
-            var imageFilename: String = ""
-
-            if let photoData = vehicle.photoData {
-                let idHash = vehicle.persistentModelID.id.hashValue
-                let sanitizedID = String(idHash).replacingOccurrences(of: "[^a-zA-Z0-9]", with: "_", options: .regularExpression)
-                let filename = "Vehicle_\(sanitizedID).jpg"
-
-                let imageURL = imageDirectory.appendingPathComponent(filename)
-
-                do {
-                    try photoData.write(to: imageURL)
-                    imageFilename = filename
-                } catch {
-                    print("❌ Failed to save image for \(vehicle.name): \(error)")
-                    imageFilename = "404 file not found" // fallback
-                }
-            }
-
-            lines.append("\(date),\(mileage),\(cost),\(items),\(itemsCost),\(providerName),\(contactInfo),\(vehicleName),\(year),\(vin),\(license),\(imageFilename)")
+            
+            lines.append("\(date),\(mileage),\(cost),\(tax),\(discount),\(items),\(itemsCost),\(providerName),\(contactInfo),\(vehicleName),\(year),\(vin),\(license)")
             
             print ("appended line for \(vehicle.name)")
         }
@@ -624,11 +667,11 @@ struct SettingsView: View {
     private func buildImportConfirmationAlert(for url: URL) -> UIAlertController {
         let alert = UIAlertController(
             title: "Replace Existing Records?",
-            message: "This will delete all current service records only if the import succeeds. Continue?",
+            message: "Choose what to import. (Use service_export.csv for Service, refuel_export.csv for Refuel.) Existing data is preserved if import fails.",
             preferredStyle: .alert
         )
 
-        let importAction = UIAlertAction(title: "Import", style: .destructive) { _ in
+        let importAction = UIAlertAction(title: "Import Service Records", style: .destructive) { _ in
             guard url.startAccessingSecurityScopedResource() else {
                 print("❌ Failed to access security scoped resource")
                 showImportFailurePopup()
@@ -648,8 +691,28 @@ struct SettingsView: View {
                 }
             }
         }
+        
+        let importRefuelAction = UIAlertAction(title: "Import Refuel Records", style: .destructive) { _ in
+            guard url.startAccessingSecurityScopedResource() else {
+                print("❌ Failed to access security scoped resource")
+                showImportFailurePopup()
+                return
+            }
+
+            defer { url.stopAccessingSecurityScopedResource() }
+
+            importRefuelRecords(from: url) { success in
+                if success {
+                    print("✅ Refuel import succeeded")
+                } else {
+                    print("⚠️ Refuel import failed — existing records preserved")
+                    showImportFailurePopup()
+                }
+            }
+        }
 
         alert.addAction(importAction)
+        alert.addAction(importRefuelAction)
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         return alert
     }
@@ -693,10 +756,69 @@ struct SettingsView: View {
     }
 
     private func importServiceRecords(from url: URL, completion: @escaping (Bool) -> Void) {
-        guard let content = try? String(contentsOf: url, encoding: .ascii) else {
-            print("❌ Unable to read CSV file")
+        // Read CSV data robustly (CSV exports are typically UTF-8)
+        let content: String
+        do {
+            let data = try Data(contentsOf: url)
+            if let s = String(data: data, encoding: .utf8) {
+                content = s
+            } else if let s = String(data: data, encoding: .utf16) {
+                content = s
+            } else if let s = String(data: data, encoding: .isoLatin1) {
+                content = s
+            } else {
+                print("❌ Unable to decode CSV data. URL: \(url)")
+                completion(false)
+                return
+            }
+        } catch {
+            print("❌ Unable to read CSV file at URL: \(url). Error: \(error)")
             completion(false)
             return
+        }
+
+        print("📄 Import URL: \(url)")
+        print("📄 CSV length: \(content.count) chars")
+
+        // CSV parser for quoted fields
+        func parseCSVLine(_ line: String) -> [String] {
+            var result: [String] = []
+            var current = ""
+            var inQuotes = false
+            var iterator = line.makeIterator()
+
+            while let ch = iterator.next() {
+                if ch == "\"" {
+                    if inQuotes {
+                        // If next char is also a quote, it's an escaped quote
+                        if let next = iterator.next() {
+                            if next == "\"" {
+                                current.append("\"")
+                            } else {
+                                // End quotes; push back the extra char by processing it normally
+                                inQuotes = false
+                                if next == "," {
+                                    result.append(current)
+                                    current = ""
+                                } else {
+                                    current.append(next)
+                                }
+                            }
+                        } else {
+                            inQuotes = false
+                        }
+                    } else {
+                        inQuotes = true
+                    }
+                } else if ch == "," && !inQuotes {
+                    result.append(current)
+                    current = ""
+                } else {
+                    current.append(ch)
+                }
+            }
+            result.append(current)
+            return result.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
         }
 
         let rows = content
@@ -707,68 +829,44 @@ struct SettingsView: View {
         dateFormatter.dateFormat = "yyyy-MM-dd"
 
         for row in rows {
-            let fields = row.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            let trimmedRow = row.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmedRow.isEmpty { continue }
+            let fields = parseCSVLine(trimmedRow)
 
-            guard fields.count >= 12 else {
+            guard fields.count >= 13 else {
                 print("⚠️ Skipping malformed row: \(row)")
                 continue
             }
 
-            // 📅 Parse row fields
+            // 📅 Parse row fields (must match export header)
             let date = dateFormatter.date(from: fields[0]) ?? .now
             let mileage = Int(fields[1]) ?? 0
             let cost = Double(fields[2]) ?? 0.0
-            let typeName = fields[3]
-            let providerName = fields[4]
-            let contactInfo = fields[5]
-            let vehicleName = fields[6]
-            let vehicleYear = Int(fields[7]) ?? 0
-            let vin = fields[8]
-            let license = fields[9]
-            let suggestedMileage = Int(fields[10]) ?? 0
-            let imageFilename = fields[11]
-            let tax = Double(fields[12]) ?? 0.0
-            let total = Double(fields[13]) ?? 0.0
             
-            
-            let imageDirectory = URL.documentsDirectory.appendingPathComponent("ExportedImages")
-            let imageURL = imageDirectory.appendingPathComponent(imageFilename)
-            var photoData: Data? = nil
-            if FileManager.default.fileExists(atPath: imageURL.path) {
-                photoData = try? Data(contentsOf: imageURL)
-            } else {
-                print("⚠️ Image not found: \(imageURL.lastPathComponent)")
-            }
+            let taxString = fields[3].trimmingCharacters(in: .whitespacesAndNewlines)
+            let tax = taxString.isEmpty ? nil : Double(taxString)
 
-            if photoData == nil {
-                if let iCloudURL = FileManager.default.url(forUbiquityContainerIdentifier: "iCloud.com.jacob.ServiceIt")?
-                    .appendingPathComponent("Documents/ExportedImages") {
-                    let iCloudImageURL = iCloudURL.appendingPathComponent(imageFilename)
-                    photoData = try? Data(contentsOf: iCloudImageURL)
-                    if photoData == nil {
-                        print("⚠️ Image not found in iCloud either: \(imageFilename)")
-                    }
-                } else {
-                    print("⚠️ iCloud container not available — skipping image: \(imageFilename)")
-                }
-            }
+            let discountString = fields[4].trimmingCharacters(in: .whitespacesAndNewlines)
+            let discount = discountString.isEmpty ? nil : Double(discountString)
 
-//            if photoData == nil {
-//                guard let iCloudURL = FileManager.default.url(forUbiquityContainerIdentifier: "iCloud.com.jacob.ServiceIt")?
-//                    .appendingPathComponent("Documents/ExportedImages") else {
-//                    print("❌ iCloud container not available")
-//                    return
-//                }
-//                let imageURL = iCloudURL.appendingPathComponent(imageFilename)
-//                photoData = try? Data(contentsOf: imageURL)
-//            }
-            
+            let itemsField = fields[5]
+            let itemsCostField = fields[6]
+
+            let providerName = fields[7]
+            let contactInfo = fields[8]
+
+            let vehicleName = fields[9]
+            let vehicleYear = Int(fields[10]) ?? 0
+            let vin = fields[11]
+            let license = fields[12]
+
+            let itemNames = itemsField.split(separator: ";").map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
+            let itemCosts = itemsCostField.split(separator: ";").map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
 
             // 🚗 Vehicle matching or creation
             let vehicle = fetchExistingVehicle(name: vehicleName, year: vehicleYear, vin: vin, license: license)
                 ?? {
                     let newVehicle = Vehicle(name: vehicleName, modelYear: vehicleYear, vin: vin, license: license, currentMileage: mileage)
-                    newVehicle.photoData = photoData
                     modelContext.insert(newVehicle)
                     return newVehicle
                 }()
@@ -781,24 +879,36 @@ struct SettingsView: View {
                     return newProvider
                 }()
 
-            // 🔧 ServiceType matching or creation
-            let type = fetchExistingServiceType(name: typeName)
-                ?? {
-                    let newType = ServiceItem(name: typeName, cost: Double(suggestedMileage))
-                    modelContext.insert(newType)
-                    return newType
-                }()
-
             // 📝 Final Record
+            let computedTotal = cost + (tax ?? 0) - (discount ?? 0)
             let record = ServiceVisit(
                 date: date,
                 mileage: mileage,
                 cost: cost,
                 tax: tax,
-                total: total,
+                discount: discount,
+                total: computedTotal,
                 savedItems: []
             )
+            record.vehicle = vehicle
             record.provider = provider
+
+            // Recreate saved items from the exported items/itemsCost columns
+            for (idx, name) in itemNames.enumerated() {
+                let costString = idx < itemCosts.count ? itemCosts[idx] : ""
+                let itemCost = Double(costString) ?? 0
+
+                // Ensure the master ServiceItem exists (optional but useful for pickers)
+                if fetchExistingServiceType(name: name) == nil {
+                    let master = ServiceItem(name: name, cost: itemCost)
+                    modelContext.insert(master)
+                }
+
+                let saved = SavedServiceItem(name: name, cost: itemCost)
+                saved.visit = record
+                record.savedItems.append(saved)
+            }
+
             modelContext.insert(record)
         }
 
@@ -846,7 +956,125 @@ struct SettingsView: View {
         return try? modelContext.fetch(descriptor).first
     }
 
+    private func importRefuelRecords(from url: URL, completion: @escaping (Bool) -> Void) {
+        // Read CSV data robustly (CSV exports are typically UTF-8)
+        let content: String
+        do {
+            let data = try Data(contentsOf: url)
+            if let s = String(data: data, encoding: .utf8) {
+                content = s
+            } else if let s = String(data: data, encoding: .utf16) {
+                content = s
+            } else if let s = String(data: data, encoding: .isoLatin1) {
+                content = s
+            } else {
+                print("❌ Unable to decode CSV data. URL: \(url)")
+                completion(false)
+                return
+            }
+        } catch {
+            print("❌ Unable to read CSV file at URL: \(url). Error: \(error)")
+            completion(false)
+            return
+        }
 
+        print("⛽️ Refuel Import URL: \(url)")
+        print("⛽️ CSV length: \(content.count) chars")
+
+        let rows = content
+            .components(separatedBy: .newlines)
+            .dropFirst() // skip header
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+
+        for row in rows {
+            let trimmed = row.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmed.isEmpty { continue }
+
+            // NOTE: generateRefuelCSV currently does not quote fields; this simple split matches the export.
+            let fields = trimmed.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+
+            // Export header: Odometer,Date,Gallons,costPerGallon,Total,Carwash,CarWashCost,Vehicle,RefuleStation,StationLocation
+            guard fields.count >= 10 else {
+                print("⚠️ Skipping malformed refuel row: \(row)")
+                continue
+            }
+
+            let odometer = Int(fields[0]) ?? 0
+            let date = dateFormatter.date(from: fields[1]) ?? .now
+            let gallons = Double(fields[2]) ?? 0
+            let costPerGallon = Double(fields[3]) ?? 0
+            let total = Double(fields[4]) ?? 0
+
+            let carwashRaw = fields[5].lowercased()
+            let addedCarWash = (carwashRaw == "true" || carwashRaw == "1" || carwashRaw == "yes")
+
+            let carWashCostString = fields[6]
+            let carWashCost = Double(carWashCostString)
+
+            let vehicleName = fields[7]
+            let stationName = fields[8]
+            let stationLocation = fields[9]
+
+            let vehicle = fetchExistingVehicleByNameOnly(name: vehicleName)
+                ?? {
+                    // Minimal placeholder values for required fields
+                    let newVehicle = Vehicle(name: vehicleName, modelYear: 0, vin: "", license: "", currentMileage: odometer)
+                    modelContext.insert(newVehicle)
+                    return newVehicle
+                }()
+
+            let station = fetchExistingRefuelStation(name: stationName, location: stationLocation)
+                ?? {
+                    let newStation = RefuelStation(name: stationName, location: stationLocation)
+                    modelContext.insert(newStation)
+                    return newStation
+                }()
+
+            // Create refuel visit
+            let visit = RefuelVisit(
+                odometer: odometer,
+                date: date,
+                gallons: gallons,
+                costPerGallon: costPerGallon,
+                total: total,
+            )
+            visit.addedCarWash = addedCarWash
+            visit.carWashCost = carWashCost
+            visit.vehicle = vehicle
+            visit.refuelStation = station
+
+            modelContext.insert(visit)
+        }
+
+        do {
+            try modelContext.save()
+            completion(true)
+        } catch {
+            print("❌ Failed to save context (refuel import): \(error.localizedDescription)")
+            completion(false)
+        }
+    }
+
+    private func fetchExistingVehicleByNameOnly(name: String) -> Vehicle? {
+        let descriptor = FetchDescriptor<Vehicle>(
+            predicate: #Predicate {
+                $0.name == name
+            }
+        )
+        return try? modelContext.fetch(descriptor).first
+    }
+
+    private func fetchExistingRefuelStation(name: String, location: String) -> RefuelStation? {
+        let descriptor = FetchDescriptor<RefuelStation>(
+            predicate: #Predicate {
+                $0.name == name &&
+                $0.location == location
+            }
+        )
+        return try? modelContext.fetch(descriptor).first
+    }
 
     
 }
